@@ -1,20 +1,21 @@
 import moment from 'moment';
 import { LoanDetails } from "../Domain/FormField";
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
 
 export const calcAmortizationScheduleItems = (loanDet: LoanDetails) => {
 
-    const amortizationScheduleItems: IAmortizationScheduleItem[] = [];
+    const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];
     const principal = loanDet.principal as number;
     const interestRate = loanDet.interestRate as number;
     const tenure = loanDet.tenure as number;
     const startDate = loanDet.startDate as Date;
     let extraPaymentForThisInstallment = loanDet.extraPaymentForThisInstallment as number ?? 0;
 
-    const currentDate = moment(startDate);
+    let currentDate = moment(startDate);
     let endingBalance: number = principal as number;
 
     for (let index = 1; endingBalance > 0; index++) {
-        const date: string = currentDate.add(1, 'M').format('MM-YYYY');
+        const month: string = currentDate.add(1, 'M').format('MMM-YYYY');
         let emi: number = calculateEmi(interestRate, tenure, principal);
         const beginingBalance: number = endingBalance;
         // calculate roi
@@ -39,110 +40,27 @@ export const calcAmortizationScheduleItems = (loanDet: LoanDetails) => {
             extraPaymentForThisInstallment = (beginingBalance - principleAmount);
             endingBalance = 0;
         }
+
         const item: IAmortizationScheduleItem = {
-            id : index,
-            month: date,
-            beginingBalance: AMOUNT_FORMAT.format(Math.round(beginingBalance)) ,
-            endingBalance: AMOUNT_FORMAT.format(Math.round(endingBalance)),
-            payment:AMOUNT_FORMAT.format(Math.round(emi)) ,
-            principalPaid: AMOUNT_FORMAT.format(Math.round(principleAmount)) ,
-            interestPaid: AMOUNT_FORMAT.format(Math.round(interestAmount)),
-            extraPayment: AMOUNT_FORMAT.format(Math.round(extraPaymentForThisInstallment)),
-            interestRateMnth:INTERESTRATE_FORMAT.format(interestRate) 
+            id: index,
+            month: month,
+            currentDate: currentDate,
+            beginingBalance: Math.round(beginingBalance),
+            endingBalance: Math.round(endingBalance),
+            payment: Math.round(emi),
+            principalPaid: Math.round(principleAmount),
+            interestPaid: Math.round(interestAmount),
+            extraPayment: Math.round(extraPaymentForThisInstallment),
+            interestRateMnth: interestRate
         }
-        amortizationScheduleItems.push(item)
+        reArrangeSchedule(item, amortizationScheduleItemsByYear)
     }
-    return amortizationScheduleItems;
+    console.log(amortizationScheduleItemsByYear)
+    return amortizationScheduleItemsByYear;
 }
 
 
-// const calculateAmortization = () => {
-//     let { loanAmount, interestRate, loanPeriod, emiStartDate } = loanDetailsFormData;
-//     let { emi, totalInterest, amortization, totalEarlyPayments, totalPrinciple, optionArray } = loanOutputDetails;
-//     const selectedYear = $('#myselect').val();
-//     let emiDate = emiStartDate != 0 ? new Date(emiStartDate) : new Date();
 
-//     emi = calculateEmi(interestRate, loanPeriod, loanAmount)
-
-//     let endingBalance = loanAmount;
-//     // for (let i = 0; endingBalance > emi; i++) {
-//     for (let i = 0; endinegBalanc > 0; i++) {
-
-//         emiDate = new Date(emiDate.setMonth(emiDate.getMonth() + 1));
-//         const currentYear = emiDate.getFullYear();
-//         const value = emiDate.getMonth() < 3 ? `${currentYear - 1}-${currentYear}` : `${currentYear}-${currentYear + 1}`;
-//         const option = `<option value="${value}" ${selectedYear == value ? 'selected' : ''}> ${value}</option>`;
-//         if (!optionArray.includes(option)) optionArray.push(option);
-//         let { extraPaymentForThisInstallment, interestRateforThisMonth, emiThisMonth } = getValue(i, interestRate, emi);
-
-//         //assing new values of emi, interestRate
-//         emi = emiThisMonth;
-//         interestRate = interestRateforThisMonth;
-//         const beginingBalance = endingBalance;
-
-//         // calculate roi
-//         const roi = interestRate / 12 / 100;
-//         // calculate interest_amount
-//         const interestAmount = (beginingBalance - extraPaymentForThisInstallment) * roi;
-//         if(endingBalance+interestAmount < emi){
-//             emi = endingBalance+interestAmount;
-//         }
-//         // calculate principle_amount
-//         let principleAmount = emi - interestAmount;
-//         // check interest is morethan emi and adjust
-//         if (principleAmount < 0) {
-//             // adjust emi
-//             emi = calculateEmi(interestRate, loanPeriod, loanAmount);
-//             principleAmount = emi - interestAmount;
-//         }
-//         endingBalance = beginingBalance - (principleAmount + extraPaymentForThisInstallment);
-
-//         // check pay for last installment
-//         if (endingBalance < 0) {
-//             extraPaymentForThisInstallment = (beginingBalance - principleAmount);
-//             endingBalance = 0;
-//         }
-//         totalPayMent = extraPaymentForThisInstallment + emi;
-//         if (selectedYear == 'select year' || validateDate(emiDate, selectedYear)) {
-//             totalInterest += interestAmount;
-//             totalPrinciple += principleAmount;
-//             totalEarlyPayments += extraPaymentForThisInstallment;
-
-//             totalPayMentString = extraPaymentForThisInstallment > 0 ?
-//                 `${AMOUNT_FORMAT.format(Math.round(emi))} + ${AMOUNT_FORMAT.format(Math.round(extraPaymentForThisInstallment))}` :
-//                 AMOUNT_FORMAT.format(Math.round(emi));
-
-//             amortization.push({
-//                 id: i,
-//                 month: i + 1,
-//                 emiDate: emiDate.toLocaleDateString("en-US", {
-//                     year: "numeric",
-//                     month: "short",
-//                 }),
-//                 beginingBalance: AMOUNT_FORMAT.format(Math.round(beginingBalance)),
-//                 endingBalance: AMOUNT_FORMAT.format(Math.round(endingBalance)),
-//                 totalPayMent: totalPayMentString,
-//                 principleAmount: AMOUNT_FORMAT.format(Math.round(principleAmount)),
-//                 interestAmount: AMOUNT_FORMAT.format(Math.round(interestAmount)),
-//                 extraPayment: AMOUNT_FORMAT.format(Math.round(extraPaymentForThisInstallment)),
-//                 interestRate: INTERESTRATE_FORMAT.format(interestRate),
-//                 emi: AMOUNT_FORMAT.format(Math.round(emi))
-//             });
-//         }
-
-//     }
-//     loanOutputDetails = {
-//         ...loanOutputDetails,
-//         emi,
-//         totalInterest: AMOUNT_FORMAT.format(Math.round(totalInterest)),
-//         totalEarlyPayments: AMOUNT_FORMAT.format(Math.round(totalEarlyPayments)),
-//         totalPrinciple: AMOUNT_FORMAT.format(Math.round(totalPrinciple) + Math.round(endingBalance))
-//     }
-//     renderChart(Math.round(totalPrinciple + (selectedYear == 'select year' ? endingBalance: 0) + totalEarlyPayments), totalInterest);
-
-//     console.log(loanOutputDetails)
-
-// }
 
 const calculateEmi = (interestRate: number, loanPeriod: number, loanAmount: number) => {
     const roi: number = interestRate / 12 / 100;
@@ -163,4 +81,44 @@ const INTERESTRATE_FORMAT = new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 2,
 });
 
+
+const reArrangeSchedule = (
+    item: IAmortizationScheduleItem,
+    amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[]
+) => {
+    const {
+        beginingBalance,
+        endingBalance,
+        extraPayment,
+        principalPaid,
+        payment,
+        currentDate,
+        interestPaid
+    } = item;
+    const currentYear = currentDate.get('M') < 3 ? currentDate.get('year') - 1 : currentDate.get('year');
+    const index = amortizationScheduleItemsByYear.findIndex(item => item.year == currentYear);
+    let yearItem: IAmortizationScheduleItemByYear = {} as IAmortizationScheduleItemByYear;
+
+    if (index > -1) {
+        // get month hiostory list
+        yearItem = amortizationScheduleItemsByYear[index];
+        // aggregate year values
+        yearItem.endingBalance = endingBalance;
+        yearItem.totalEmiPayMent += payment;
+        yearItem.totalExtraPayment = extraPayment
+        yearItem.totalPrincipalPaid = principalPaid;
+        yearItem.totalInterestPaid = interestPaid;
+        yearItem.monthHistory.push(item);
+    } else {
+        yearItem.year = currentYear;
+        yearItem.endingBalance = endingBalance;
+        yearItem.beginingBalance = beginingBalance;
+        yearItem.totalEmiPayMent = payment;
+        yearItem.totalExtraPayment = extraPayment;
+        yearItem.totalPrincipalPaid = principalPaid;
+        yearItem.totalInterestPaid = interestPaid;
+        yearItem.monthHistory = [item];
+        amortizationScheduleItemsByYear.push(yearItem)
+    }
+}
 

@@ -1,13 +1,28 @@
+import { Moment } from "moment";
+
+interface IAmortizationScheduleItemByYear {
+  id: number;
+  year: number;
+  beginingBalance: number;
+  endingBalance: number;
+  totalEmiPayMent: number;
+  totalPrincipalPaid: number;
+  totalInterestPaid: number;
+  totalExtraPayment: number;
+  monthHistory: IAmortizationScheduleItem[]
+}
+
 interface IAmortizationScheduleItem {
-  id : number;
+  id: number;
   month: string;
-  beginingBalance:string;
-  endingBalance:string;
-  payment: string;
-  principalPaid: string;
-  interestPaid: string;
-  extraPayment: string;
-  interestRateMnth: string;
+  currentDate: Moment;
+  beginingBalance: number;
+  endingBalance: number;
+  payment: number;
+  principalPaid: number;
+  interestPaid: number;
+  extraPayment: number;
+  interestRateMnth: number;
 }
 
 type AmortizationScheduleItemState = {

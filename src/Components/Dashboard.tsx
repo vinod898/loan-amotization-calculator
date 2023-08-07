@@ -18,13 +18,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { mainListItems, secondaryListItems } from './listItems';
-import Chart from './Chart';
 import Deposits from './Deposits';
-import Orders from './Orders';
 import FormInputs from './FormInputs';
-import { FormField, LoanDetails } from '../Domain/FormField';
+import { LoanDetails } from '../Domain/FormField';
 import { calcAmortizationScheduleItems } from '../utils/utils';
-import LoanAmotization from './LoanAmotizationTable';
+import NestedTable from './nestedTable'; // Update the import path as needed
+import { IAmortizationScheduleItemByYear } from '../type';
 
 
 function Copyright(props: any) {
@@ -94,8 +93,9 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function Dashboard() {
+
   const [open, setOpen] = React.useState(true);
-  const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItem[]);
+  const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItemByYear[]);
   const [showTable, setShowTable] = React.useState(false);
 
 
@@ -107,7 +107,7 @@ export default function Dashboard() {
   const onSubmitCallBack = (loanDet: LoanDetails) => {
 
     // call calcAmortizationScheduleItems
-    const amortizationScheduleItems: IAmortizationScheduleItem[] = calcAmortizationScheduleItems(loanDet)
+    const amortizationScheduleItems: IAmortizationScheduleItemByYear[] = calcAmortizationScheduleItems(loanDet)
     setAmortizationScheduleItems(amortizationScheduleItems)
     setShowTable(true)
   }
@@ -217,7 +217,7 @@ export default function Dashboard() {
                     </Grid>
                     <Grid item xs={12}>
                       <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                        <LoanAmotization amortizationScheduleItems={amortizationScheduleItems} />
+                        <NestedTable data={amortizationScheduleItems} />
                       </Paper>
                     </Grid>
                   </React.Fragment>

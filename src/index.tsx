@@ -7,6 +7,7 @@ import reducer from "./store/reducer";
 import { createStore, applyMiddleware, Store } from "redux";
 import { Provider } from "react-redux";
 import thunk from "redux-thunk";
+import { AmortizationScheduleItemState, AmortizationScheduleAction, DispatchType } from './type';
 
 const store: Store<AmortizationScheduleItemState, AmortizationScheduleAction> & {
   dispatch: DispatchType;

@@ -1,3 +1,4 @@
+import { IAmortizationScheduleItem, AmortizationScheduleAction, DispatchType } from "../type";
 import * as actionTypes from "./actionTypes";
 
 export function addArticle(article: IAmortizationScheduleItem) {
