@@ -12,29 +12,17 @@ import {
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
-
-interface HistoryRow {
-  date: string;
-  customer: string;
-  amount: number;
-}
-
-interface RowData {
-  name: string;
-  calories: number;
-  fat: number;
-  carbs: number;
-  protein: number;
-  price: number;
-  history: HistoryRow[];
-}
+import EditIcon from '@mui/icons-material/Edit';
+import FormDataModal from './formModal';
 
 interface RowProps {
   row: IAmortizationScheduleItemByYear;
+  edit: (historyRow: IAmortizationScheduleItem) => void;
 }
 
-const Row: React.FC<RowProps> = ({ row }) => {
+const Row: React.FC<RowProps> = ({ row, edit }) => {
   const [open, setOpen] = useState(false);
+
 
   return (
     <>
@@ -67,6 +55,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
                   <TableCell>Interest Paid</TableCell>
                   <TableCell>Part Payment</TableCell>
                   <TableCell>Closing Balance</TableCell>
+                  <TableCell>Edit</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -81,6 +70,17 @@ const Row: React.FC<RowProps> = ({ row }) => {
                     <TableCell>{historyRow.interestPaid}</TableCell>
                     <TableCell>{historyRow.extraPayment}</TableCell>
                     <TableCell>{historyRow.endingBalance}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        size="small" // Set the size to 'small'
+                        onClick={() => edit(historyRow)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+
+                    </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>
@@ -97,8 +97,20 @@ interface NestedTableProps {
 }
 
 const NestedTable: React.FC<NestedTableProps> = ({ data }) => {
+  const [openModal, setOpenModal] = useState(false);
+  const [amortizationScheduleItem, setAmortizationScheduleItem] = useState({} as IAmortizationScheduleItem);
+
+  const oncloseModal = (item: IAmortizationScheduleItem) => {
+    console.log('onclose modal called...', { item })
+    setOpenModal(false);
+  }
+
+  const handleEdit = (historyRow: IAmortizationScheduleItem): void => {
+    setOpenModal(true);
+    setAmortizationScheduleItem(historyRow)
+  }
   return (
-    <TableContainer component={Paper}>
+    <><TableContainer component={Paper}>
       <Table aria-label="collapsible table">
         <TableHead>
           <TableRow>
@@ -115,11 +127,13 @@ const NestedTable: React.FC<NestedTableProps> = ({ data }) => {
         </TableHead>
         <TableBody>
           {data.map((row: IAmortizationScheduleItemByYear) => (
-            <Row key={row.year} row={row} />
+            <Row key={row.year} row={row} edit={handleEdit} />
           ))}
         </TableBody>
       </Table>
     </TableContainer>
+      <FormDataModal open={openModal} onClose={oncloseModal} item={amortizationScheduleItem}></FormDataModal></>
+
   );
 };
 
