@@ -13,7 +13,6 @@ import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -24,20 +23,6 @@ import { LoanDetails } from '../Domain/FormField';
 import { calcAmortizationScheduleItems } from '../utils/utils';
 import NestedTable from './nestedTable'; // Update the import path as needed
 import { IAmortizationScheduleItemByYear } from '../type';
-
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const drawerWidth: number = 240;
 
@@ -97,7 +82,6 @@ export default function Dashboard() {
   const [open, setOpen] = React.useState(true);
   const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItemByYear[]);
   const [showTable, setShowTable] = React.useState(false);
-
 
 
   const toggleDrawer = () => {

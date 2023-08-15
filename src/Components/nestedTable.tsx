@@ -101,7 +101,6 @@ const NestedTable: React.FC<NestedTableProps> = ({ data }) => {
   const [amortizationScheduleItem, setAmortizationScheduleItem] = useState({} as IAmortizationScheduleItem);
 
   const oncloseModal = (item: IAmortizationScheduleItem) => {
-    console.log('onclose modal called...', { item })
     setOpenModal(false);
   }
 

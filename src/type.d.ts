@@ -26,12 +26,12 @@ interface IAmortizationScheduleItem {
 }
 
 type AmortizationScheduleItemState = {
-  amortizationScheduleItems: IAmortizationScheduleItem[];
+  amortizationScheduleItems: IAmortizationScheduleItemByYear[];
 };
 
 type AmortizationScheduleAction = {
   type: string;
-  article: IAmortizationScheduleItem;
+  payload: any;
 };
 
 type DispatchType = (args: AmortizationScheduleAction) => AmortizationScheduleAction;
