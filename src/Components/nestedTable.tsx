@@ -55,6 +55,7 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
                   <TableCell>Interest Paid</TableCell>
                   <TableCell>Part Payment</TableCell>
                   <TableCell>Closing Balance</TableCell>
+                  <TableCell>Interest Rate</TableCell>
                   <TableCell>Edit</TableCell>
                 </TableRow>
               </TableHead>
@@ -70,6 +71,7 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
                     <TableCell>{historyRow.interestPaid}</TableCell>
                     <TableCell>{historyRow.extraPayment}</TableCell>
                     <TableCell>{historyRow.endingBalance}</TableCell>
+                    <TableCell>{historyRow.interestRateMnth}</TableCell>
                     <TableCell>
                       <IconButton
                         color="primary"
@@ -94,14 +96,19 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
 
 interface NestedTableProps {
   data: IAmortizationScheduleItemByYear[];
+  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
 }
 
-const NestedTable: React.FC<NestedTableProps> = ({ data }) => {
+const NestedTable: React.FC<NestedTableProps> = ({ data, updateAmortizationItem }) => {
   const [openModal, setOpenModal] = useState(false);
   const [amortizationScheduleItem, setAmortizationScheduleItem] = useState({} as IAmortizationScheduleItem);
 
   const oncloseModal = (item: IAmortizationScheduleItem) => {
     setOpenModal(false);
+    // update 
+    updateAmortizationItem(item);
+    // fetch new values
+    
   }
 
   const handleEdit = (historyRow: IAmortizationScheduleItem): void => {

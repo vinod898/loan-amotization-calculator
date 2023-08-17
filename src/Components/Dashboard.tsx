@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -22,16 +22,21 @@ import Deposits from './Deposits';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItemByYear } from '../type';
-import { fetchAmortizationItems, updateAmortizationItem } from '../store/actions';
+import { IAmortizationScheduleItem } from '../type';
+import {
+  getAmortizationItems,
+  updateAmortizationItem,
+  updateLoadDetails
+} from '../store/actions';
 import { RootState } from '../store/store';
 import { showTableSelector } from '../store/AmortizationSelectors';
 
 
 
 interface DashboardProps {
-  fetchAmortizationItems: (loanDet: LoanDetails) => void;
-  updateAmortizationItem: (updatedItem: IAmortizationScheduleItemByYear) => void;
+  getAmortizationItems: () => void;
+  updateLoadDetails: (loanDet: LoanDetails) => void;
+  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
 }
 
 
@@ -89,17 +94,17 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 const Dashboard: React.FC<DashboardProps> = ({
-  fetchAmortizationItems,
-  updateAmortizationItem,
+  getAmortizationItems,
+  updateLoadDetails,
+  updateAmortizationItem
   // ... (rest of the props)
 }) => {
 
-  const dispatch = useDispatch();
   const showTable = useSelector(showTableSelector);
   const amortizationScheduleItems = useSelector(
     (state: RootState) => state.amortization.amortizationScheduleItems
   );
-
+  console.log(`amortizationScheduleItems.length == ${amortizationScheduleItems.length}`)
   const [open, setOpen] = React.useState(true);
 
   const toggleDrawer = () => {
@@ -107,7 +112,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const onSubmitCallBack = (loanDet: LoanDetails) => {
-    fetchAmortizationItems(loanDet);
+    updateLoadDetails(loanDet);
+    getAmortizationItems();
+  };
+
+  
+  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem)  => {
+    updateAmortizationItem(updatedItem);
+    getAmortizationItems();
   };
 
   return (
@@ -216,7 +228,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <Paper
                       sx={{ p: 2, display: 'flex', flexDirection: 'column' }}
                     >
-                      <NestedTable data={amortizationScheduleItems} />
+                      <NestedTable data={amortizationScheduleItems}
+                        updateAmortizationItem={onUpdateCallBack} />
                     </Paper>
                   </Grid>
                 </React.Fragment>
@@ -235,6 +248,7 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 export default connect(mapStateToProps, {
-  fetchAmortizationItems,
-  updateAmortizationItem,
+  getAmortizationItems,
+  updateLoadDetails,
+  updateAmortizationItem
 })(Dashboard);

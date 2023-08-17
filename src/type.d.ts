@@ -32,7 +32,16 @@ type AmortizationScheduleItemState = {
 
 type AmortizationScheduleAction = {
   type: string;
-  payload: any;
+  payload?:  LoanDetails | IAmortizationScheduleItem;
 };
 
 type DispatchType = (args: AmortizationScheduleAction) => AmortizationScheduleAction;
+
+interface State {
+  amortizationScheduleItems: IAmortizationScheduleItemByYear[];
+  showTable: boolean;
+  interestMap: Map<number, number>;
+  emiMap: Map<number, number>;
+  extraPaymentMap: Map<number, number>;
+  loanDet: LoanDetails
+}

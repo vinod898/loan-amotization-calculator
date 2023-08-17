@@ -1,25 +1,35 @@
 import moment from 'moment';
-import { LoanDetails } from "../Domain/FormField";
-import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, State } from '../type';
+export const calcAmortizationScheduleItems = (state: State) => {
 
-export const calcAmortizationScheduleItems = (loanDet: LoanDetails) => {
+    const { emiMap, extraPaymentMap, interestMap, loanDet } = state;
+    console.log({ emiMap, extraPaymentMap, interestMap, loanDet } )
+
 
     const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];
     const principal = loanDet.principal as number;
     const interestRate = loanDet.interestRate as number;
     const tenure = loanDet.tenure as number;
     const startDate = loanDet.startDate as Date;
-    let extraPaymentForThisInstallment = loanDet.extraPaymentForThisInstallment as number ?? 0;
+    let initialEmi = calculateEmi(interestRate, tenure, principal)
+    
 
     let currentDate = moment(startDate);
     let endingBalance: number = principal as number;
 
+   
+
     for (let index = 1; endingBalance > 0; index++) {
+
+        let extraPaymentForThisInstallment: number = extraPaymentMap.get(index) ?? 0;
+        let interestRateMnth: number = interestMap.get(index) ?? interestRate;
+        let emi: number = emiMap.get(index) ?? initialEmi ;
+
+
         const month: string = currentDate.add(1, 'M').format('MMM-YYYY');
-        let emi: number = calculateEmi(interestRate, tenure, principal);
         const beginingBalance: number = endingBalance;
-        // calculate roi
-        const roi = interestRate / 12 / 100;
+        // calculate roi  
+        const roi = interestRateMnth / 12 / 100;
         // calculate interest_amount
         const interestAmount = (beginingBalance - extraPaymentForThisInstallment) * roi;
         if (endingBalance + interestAmount < emi) {
@@ -30,7 +40,7 @@ export const calcAmortizationScheduleItems = (loanDet: LoanDetails) => {
         // check interest is morethan emi and adjust
         if (principleAmount < 0) {
             // adjust emi
-            emi = calculateEmi(interestRate, tenure, principal);
+            emi = calculateEmi(interestRateMnth, tenure, principal);
             principleAmount = emi - interestAmount;
         }
         endingBalance = beginingBalance - (principleAmount + extraPaymentForThisInstallment);
@@ -51,7 +61,7 @@ export const calcAmortizationScheduleItems = (loanDet: LoanDetails) => {
             principalPaid: Math.round(principleAmount),
             interestPaid: Math.round(interestAmount),
             extraPayment: Math.round(extraPaymentForThisInstallment),
-            interestRateMnth: interestRate
+            interestRateMnth: interestRateMnth
         }
         reArrangeSchedule(item, amortizationScheduleItemsByYear)
     }
@@ -105,9 +115,9 @@ const reArrangeSchedule = (
         // aggregate year values
         yearItem.endingBalance = endingBalance;
         yearItem.totalEmiPayMent += payment;
-        yearItem.totalExtraPayment = extraPayment
-        yearItem.totalPrincipalPaid = principalPaid;
-        yearItem.totalInterestPaid = interestPaid;
+        yearItem.totalExtraPayment += extraPayment
+        yearItem.totalPrincipalPaid += principalPaid;
+        yearItem.totalInterestPaid += interestPaid;
         yearItem.finacialYear = finacialYear;
         yearItem.monthHistory.push(item);
     } else {

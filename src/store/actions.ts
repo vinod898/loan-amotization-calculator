@@ -1,8 +1,10 @@
 // actions.ts
-import { Action } from 'redux';
-import { FETCH_AMORTIZATION_ITEMS, UPDATE_AMORTIZATION_ITEM } from './actionTypes';
-import { AmortizationScheduleAction, IAmortizationScheduleItemByYear } from '../type'; // Adjust the import path
-import { calcAmortizationScheduleItems } from '../utils/utils';
+import {
+  GET_AMORTIZATION_ITEMS,
+  UPDATE_AMORTIZATION_ITEM,
+  UPDATE_LOAN_DETAILS
+} from './actionTypes';
+import { AmortizationScheduleAction, IAmortizationScheduleItem } from '../type'; // Adjust the import path
 import { LoanDetails } from '../Domain/FormField';
 import { ThunkAction } from 'redux-thunk';
 import { RootState } from './store';
@@ -15,22 +17,26 @@ type AppThunk<ReturnType = void> = ThunkAction<
   AmortizationScheduleAction
 >;
 
-export const fetchAmortizationItems = (
+export const getAmortizationItems = (): AppThunk<Promise<void>> => async (dispatch) => {
+  dispatch({
+    type:GET_AMORTIZATION_ITEMS ,
+    payload: [],
+  });
+};
+
+
+export const updateLoadDetails = (
   loanDet: LoanDetails
 ): AppThunk<Promise<void>> => async (dispatch) => {
-  const fetchedData: IAmortizationScheduleItemByYear[] =
-    calcAmortizationScheduleItems(loanDet);
   dispatch({
-    type: FETCH_AMORTIZATION_ITEMS,
-    payload: fetchedData,
+    type: UPDATE_LOAN_DETAILS,
+    payload: loanDet,
   });
 };
 
 export const updateAmortizationItem = (
-  updatedItem: IAmortizationScheduleItemByYear
+  updatedItem: IAmortizationScheduleItem
 ): AppThunk<Promise<void>> => async (dispatch) => {
-  // Implement your logic to update the item here
-  // Dispatch an action with the updated item
   dispatch({
     type: UPDATE_AMORTIZATION_ITEM,
     payload: updatedItem,
