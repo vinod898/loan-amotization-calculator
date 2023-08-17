@@ -33,7 +33,7 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
           </IconButton>
         </TableCell>
         <TableCell component="th" scope="row">
-          {row.year}
+          {row.finacialYear}
         </TableCell>
         <TableCell align="left">{row.beginingBalance}</TableCell>
         <TableCell align="left">{row.totalEmiPayMent}</TableCell>

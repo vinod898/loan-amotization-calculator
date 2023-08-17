@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -20,9 +21,19 @@ import { mainListItems, secondaryListItems } from './listItems';
 import Deposits from './Deposits';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
-import { calcAmortizationScheduleItems } from '../utils/utils';
 import NestedTable from './nestedTable'; // Update the import path as needed
 import { IAmortizationScheduleItemByYear } from '../type';
+import { fetchAmortizationItems, updateAmortizationItem } from '../store/actions';
+import { RootState } from '../store/store';
+import { showTableSelector } from '../store/AmortizationSelectors';
+
+
+
+interface DashboardProps {
+  fetchAmortizationItems: (loanDet: LoanDetails) => void;
+  updateAmortizationItem: (updatedItem: IAmortizationScheduleItemByYear) => void;
+}
+
 
 const drawerWidth: number = 240;
 
@@ -77,24 +88,27 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-export default function Dashboard() {
+const Dashboard: React.FC<DashboardProps> = ({
+  fetchAmortizationItems,
+  updateAmortizationItem,
+  // ... (rest of the props)
+}) => {
+
+  const dispatch = useDispatch();
+  const showTable = useSelector(showTableSelector);
+  const amortizationScheduleItems = useSelector(
+    (state: RootState) => state.amortization.amortizationScheduleItems
+  );
 
   const [open, setOpen] = React.useState(true);
-  const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItemByYear[]);
-  const [showTable, setShowTable] = React.useState(false);
-
 
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
   const onSubmitCallBack = (loanDet: LoanDetails) => {
-
-    // call calcAmortizationScheduleItems
-    const amortizationScheduleItems: IAmortizationScheduleItemByYear[] = calcAmortizationScheduleItems(loanDet)
-    setAmortizationScheduleItems(amortizationScheduleItems)
-    setShowTable(true)
-  }
+    fetchAmortizationItems(loanDet);
+  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -179,34 +193,35 @@ export default function Dashboard() {
                     height: 'auto',
                   }}
                 >
-                  <FormInputs onSubmit={onSubmitCallBack}></FormInputs>
+                  <FormInputs onSubmit={onSubmitCallBack} />
                 </Paper>
               </Grid>
 
               {/* Recent Deposits */}
-              {
-                showTable && (
-                  <React.Fragment>
-                    <Grid item xs={12} md={4} lg={3}>
-                      <Paper
-                        sx={{
-                          p: 2,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          height: 240,
-                        }}
-                      >
-                        <Deposits />
-                      </Paper>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                        <NestedTable data={amortizationScheduleItems} />
-                      </Paper>
-                    </Grid>
-                  </React.Fragment>
-                )
-              }
+              {showTable && (
+                <React.Fragment>
+                  <Grid item xs={12} md={4} lg={3}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: 240,
+                      }}
+                    >
+                      <Deposits />
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Paper
+                      sx={{ p: 2, display: 'flex', flexDirection: 'column' }}
+                    >
+                      <NestedTable data={amortizationScheduleItems} />
+                    </Paper>
+                  </Grid>
+                </React.Fragment>
+              )}
+
             </Grid>
           </Container>
         </Box>
@@ -214,3 +229,12 @@ export default function Dashboard() {
     </ThemeProvider>
   );
 }
+const mapStateToProps = (state: RootState) => ({
+  amortizationScheduleItems: state.amortization.amortizationScheduleItems,
+  showTable: showTableSelector(state),
+});
+
+export default connect(mapStateToProps, {
+  fetchAmortizationItems,
+  updateAmortizationItem,
+})(Dashboard);

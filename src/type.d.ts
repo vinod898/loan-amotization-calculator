@@ -9,6 +9,7 @@ interface IAmortizationScheduleItemByYear {
   totalPrincipalPaid: number;
   totalInterestPaid: number;
   totalExtraPayment: number;
+  finacialYear: string;
   monthHistory: IAmortizationScheduleItem[]
 }
 
