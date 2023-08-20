@@ -4,24 +4,50 @@ import InputBox from './InputBox';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { FormField, LoanDetails } from '../Domain/FormField';
+import { connect, useSelector } from 'react-redux';
+import store, { RootState } from '../store/store';
+
+
 
 interface TitleProps {
     onSubmit: (loanDetails: LoanDetails) => void;
 }
 
 
-const items: FormField[] = [
-    { id: 1, name: "principal", value: 5000000 },
-    { id: 2, name: "interestRate", value: 6.6 },
-    { id: 3, name: "tenure", value: 25 },
+let items: FormField[] = [
+    { id: 1, name: "principal", value: 0 },
+    { id: 2, name: "interestRate", value: 0 },
+    { id: 3, name: "tenure", value: 0 },
     { id: 4, name: "startDate", value: new Date() },
-
 ];
 
 
 export default function FormInputs(props: TitleProps) {
 
-    const [showBtn, setShowBtn] = useState(true)
+    // store
+    const storeState: RootState = store.getState();
+    const loanDet = storeState.amortization.loanDet;
+    const [inputItems, setInputItems] = useState(items);
+    const [showBtn, setShowBtn] = useState(false);
+
+    React.useEffect(() => {
+        if (loanDet) {
+            items = items.map(x => {
+                const key = x.name;
+                const value = key === "startDate" ? new Date(loanDet[key]) ?? new Date() : loanDet[key]?? 0;
+                x.value = value
+                return x;
+            });
+            setInputItems(items)
+        }
+
+    }, items);
+
+
+
+
+
+
 
     const { onSubmit } = props;
     const handleSubmit = () => {
@@ -30,7 +56,7 @@ export default function FormInputs(props: TitleProps) {
             const { name, value } = item;
             if (name == 'startDate') {
                 loanDetails[name] = value as Date;
-            }else {
+            } else {
                 loanDetails[name] = value as number;
             }
         }
@@ -64,7 +90,7 @@ export default function FormInputs(props: TitleProps) {
     return (
         <React.Fragment>
             <Grid container spacing={1}>
-                {items.map((item, index) => {
+                {inputItems.map((item, index) => {
                     const { name, value } = item;
                     return (
                         <Grid container item spacing={3} xs={12} key={index}>
