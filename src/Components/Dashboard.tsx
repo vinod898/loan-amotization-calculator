@@ -15,16 +15,24 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import MenuIcon from '@mui/icons-material/Menu';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import SaveIcon from '@mui/icons-material/Save';
+import Avatar from '@mui/material/Avatar'; // Import Avatar component
 import { mainListItems, secondaryListItems } from './listItems';
 import Deposits from './Deposits';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
 import { IAmortizationScheduleItem } from '../type';
+import { useNavigate } from 'react-router-dom';
+import { Outlet, useParams } from "react-router-dom";
+
 import {
   getAmortizationItems,
+  getState,
+  saveState,
   updateAmortizationItem,
   updateLoadDetails
 } from '../store/actions';
@@ -37,6 +45,8 @@ interface DashboardProps {
   getAmortizationItems: () => void;
   updateLoadDetails: (loanDet: LoanDetails) => void;
   updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
+  saveState: (user: string) => void;
+  getState: (user: string) => void;
 }
 
 
@@ -96,15 +106,29 @@ const defaultTheme = createTheme();
 const Dashboard: React.FC<DashboardProps> = ({
   getAmortizationItems,
   updateLoadDetails,
-  updateAmortizationItem
+  updateAmortizationItem,
+  saveState,
+  getState
   // ... (rest of the props)
 }) => {
+  const navigate = useNavigate();
+
+  const { param } = useParams();
+  const [profileData, setProfileData] = React.useState({
+    name: param?? 'No Name', // Replace with actual user's name
+    // Add other profile info here
+  });
+  React.useEffect(() => {
+    getState(profileData.name);
+  }, []); // Empty dependency array to run only on mount
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
 
   const showTable = useSelector(showTableSelector);
   const amortizationScheduleItems = useSelector(
     (state: RootState) => state.amortization.amortizationScheduleItems
   );
-  console.log(`amortizationScheduleItems.length == ${amortizationScheduleItems.length}`)
   const [open, setOpen] = React.useState(true);
 
   const toggleDrawer = () => {
@@ -116,10 +140,25 @@ const Dashboard: React.FC<DashboardProps> = ({
     getAmortizationItems();
   };
 
-  
-  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem)  => {
+
+  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
     updateAmortizationItem(updatedItem);
     getAmortizationItems();
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+
+  const handleSaveClick = () => {
+   
+    saveState(profileData.name);
+  };
+
+  const handleSignOut = () => {
+    
+    navigate('/');
   };
 
   return (
@@ -151,13 +190,59 @@ const Dashboard: React.FC<DashboardProps> = ({
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              Loan Amortization
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            {showTable && <IconButton color="inherit" onClick={handleSaveClick}>
+              <SaveIcon sx={{ color: 'white' }} />
+            </IconButton>}
+            <Avatar
+              alt={profileData.name}
+              src="/path/to/avatar-image.jpg" // Replace with the actual image URL
+              sx={{
+                marginLeft: '10px',
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.8,
+                },
+              }}
+              onClick={(event) => setAnchorEl(event.currentTarget)}
+            />
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem onClick={handleClose}>
+                <Typography variant="body1">
+                  Welcome, {profileData.name}
+                </Typography>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleClose}>
+                <Typography variant="body2" color="textSecondary">
+                  Profile
+                </Typography>
+              </MenuItem>
+              <MenuItem onClick={handleClose}>
+                <Typography variant="body2" color="textSecondary">
+                  Settings
+                </Typography>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleSignOut}>
+                <Typography variant="body2" color="error">
+                  Sign Out
+                </Typography>
+              </MenuItem>
+            </Menu>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -250,5 +335,7 @@ const mapStateToProps = (state: RootState) => ({
 export default connect(mapStateToProps, {
   getAmortizationItems,
   updateLoadDetails,
-  updateAmortizationItem
+  updateAmortizationItem,
+  saveState,
+  getState
 })(Dashboard);

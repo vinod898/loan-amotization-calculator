@@ -1,6 +1,8 @@
 // reducer.ts
 import {
   GET_AMORTIZATION_ITEMS,
+  GET_STATE,
+  SAVE_STATE,
   UPDATE_AMORTIZATION_ITEM,
   UPDATE_LOAN_DETAILS
 } from './actionTypes';
@@ -29,7 +31,6 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
   let amortizationScheduleItems: IAmortizationScheduleItemByYear[] = [];
   switch (action.type) {
     case UPDATE_LOAN_DETAILS:
-      console.log('in UPDATE_LOAN_DETAILS reducer')
       const loanDet = action.payload as LoanDetails;
       return {
         ...state,
@@ -37,7 +38,6 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
       };
     case GET_AMORTIZATION_ITEMS:
       amortizationScheduleItems = calcAmortizationScheduleItems(state);
-      console.log('in GET_AMORTIZATION_ITEMS reducer')
       return {
         ...state,
         amortizationScheduleItems,
@@ -68,7 +68,6 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
                 if (matchFound === false)
                   state.extraPaymentMap.set(id, extraPayment);
                 matchFound = true;
-                console.log('map values changed...')
               }
 
             }
@@ -79,6 +78,17 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
         ...state,
         amortizationScheduleItems,
       };
+    case SAVE_STATE:
+      localStorage.setItem(action.payload, JSON.stringify(state));
+      return state;
+    case GET_STATE:
+      const data = localStorage.getItem(action.payload);
+      const newState = data ? {
+        ...state,
+        ...(JSON.parse(data) as State),
+      } : state;
+      return newState;
+
     default:
       return state;
   }

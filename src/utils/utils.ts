@@ -3,7 +3,6 @@ import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, State } fro
 export const calcAmortizationScheduleItems = (state: State) => {
 
     const { emiMap, extraPaymentMap, interestMap, loanDet } = state;
-    console.log({ emiMap, extraPaymentMap, interestMap, loanDet } )
 
 
     const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];

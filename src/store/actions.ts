@@ -2,7 +2,9 @@
 import {
   GET_AMORTIZATION_ITEMS,
   UPDATE_AMORTIZATION_ITEM,
-  UPDATE_LOAN_DETAILS
+  UPDATE_LOAN_DETAILS,
+  SAVE_STATE,
+  GET_STATE
 } from './actionTypes';
 import { AmortizationScheduleAction, IAmortizationScheduleItem } from '../type'; // Adjust the import path
 import { LoanDetails } from '../Domain/FormField';
@@ -24,6 +26,21 @@ export const getAmortizationItems = (): AppThunk<Promise<void>> => async (dispat
   });
 };
 
+
+export const saveState = (user: string): AppThunk<Promise<void>> => async (dispatch) => {
+  dispatch({
+    type:SAVE_STATE ,
+    payload: user,
+  });
+};
+
+
+export const getState = (user: string): AppThunk<Promise<void>> => async (dispatch) => {
+  dispatch({
+    type:GET_STATE ,
+    payload: user,
+  });
+};
 
 export const updateLoadDetails = (
   loanDet: LoanDetails
