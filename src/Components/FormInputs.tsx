@@ -34,7 +34,9 @@ export default function FormInputs(props: TitleProps) {
         if (loanDet) {
             items = items.map(x => {
                 const key = x.name;
-                const value = key === "startDate" ? new Date(loanDet[key]) ?? new Date() : loanDet[key]?? 0;
+                const value = key === "startDate" ?
+                    loanDet[key] ? new Date(loanDet[key]) : new Date() :
+                    loanDet[key] ?? 0;
                 x.value = value
                 return x;
             });
