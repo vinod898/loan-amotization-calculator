@@ -1,16 +1,15 @@
 {
   "files": {
-    "main.css": "/loan-amotization-calculator/static/css/main.073c9b0a.css",
-    "main.js": "/loan-amotization-calculator/static/js/main.eb134a00.js",
+    "main.css": "/loan-amotization-calculator/static/css/main.e6c13ad2.css",
+    "main.js": "/loan-amotization-calculator/static/js/main.37ea6c75.js",
     "static/js/787.fa1aa058.chunk.js": "/loan-amotization-calculator/static/js/787.fa1aa058.chunk.js",
-    "static/media/logo.svg": "/loan-amotization-calculator/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/loan-amotization-calculator/index.html",
-    "main.073c9b0a.css.map": "/loan-amotization-calculator/static/css/main.073c9b0a.css.map",
-    "main.eb134a00.js.map": "/loan-amotization-calculator/static/js/main.eb134a00.js.map",
+    "main.e6c13ad2.css.map": "/loan-amotization-calculator/static/css/main.e6c13ad2.css.map",
+    "main.37ea6c75.js.map": "/loan-amotization-calculator/static/js/main.37ea6c75.js.map",
     "787.fa1aa058.chunk.js.map": "/loan-amotization-calculator/static/js/787.fa1aa058.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.073c9b0a.css",
-    "static/js/main.eb134a00.js"
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.37ea6c75.js"
   ]
 }
