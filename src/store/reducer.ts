@@ -1,6 +1,9 @@
 // reducer.ts
 import {
   GET_AMORTIZATION_ITEMS,
+  GET_STATE,
+  RESET_AMORTIZATION,
+  SAVE_STATE,
   UPDATE_AMORTIZATION_ITEM,
   UPDATE_LOAN_DETAILS
 } from './actionTypes';
@@ -29,7 +32,6 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
   let amortizationScheduleItems: IAmortizationScheduleItemByYear[] = [];
   switch (action.type) {
     case UPDATE_LOAN_DETAILS:
-      console.log('in UPDATE_LOAN_DETAILS reducer')
       const loanDet = action.payload as LoanDetails;
       return {
         ...state,
@@ -37,7 +39,6 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
       };
     case GET_AMORTIZATION_ITEMS:
       amortizationScheduleItems = calcAmortizationScheduleItems(state);
-      console.log('in GET_AMORTIZATION_ITEMS reducer')
       return {
         ...state,
         amortizationScheduleItems,
@@ -68,16 +69,57 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
                 if (matchFound === false)
                   state.extraPaymentMap.set(id, extraPayment);
                 matchFound = true;
-                console.log('map values changed...')
               }
 
             }
           )
         })
       amortizationScheduleItems = [];
-      return {
+      state = {
         ...state,
         amortizationScheduleItems,
+      }
+      return state;
+    case SAVE_STATE:
+      const json = JSON.stringify(
+        {
+          ...state,
+          amortizationScheduleItems: [],
+          emiMap: serializeMap(state.emiMap),
+          extraPaymentMap: serializeMap(state.extraPaymentMap),
+          interestMap: serializeMap(state.interestMap),
+          showTable: false,
+        }
+      )
+      localStorage.setItem(action.payload, json);
+      return state;
+    case GET_STATE:
+      const data = localStorage.getItem(action.payload);
+      if (data) {
+        const jsonData = JSON.parse(data);
+        const emiMap = deserializeMap(jsonData.emiMap as string);
+        const extraPaymentMap = deserializeMap(jsonData.extraPaymentMap as string);
+        const interestMap = deserializeMap(jsonData.interestMap as string);
+        const loanDet = (jsonData.loanDet as LoanDetails);
+        
+        state = {
+          ...state,
+          emiMap,
+          extraPaymentMap,
+          interestMap,
+          loanDet
+        }
+      }
+      return state;
+    case RESET_AMORTIZATION:
+      return {
+        ...state,
+        amortizationScheduleItems: [],
+        showTable: false,
+        interestMap: new Map<number, number>(),
+        emiMap: new Map<number, number>(),
+        extraPaymentMap: new Map<number, number>(),
+        loanDet: {}
       };
     default:
       return state;
@@ -85,3 +127,16 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
 };
 
 export default reducer;
+// Serialize a Map to a JSON-safe object
+const serializeMap = (map: Map<number, number>) => {
+  // Convert the Map to an array of key-value pairs
+  const serializedMap = Array.from(map);
+  return JSON.stringify(serializedMap);
+}
+
+// Deserialize a JSON-safe object back to a Map
+const deserializeMap = (serializedStr: string): Map<number, number> => {
+  const serializedMap = JSON.parse(serializedStr);
+  return new Map<number, number>(serializedMap);
+};
+

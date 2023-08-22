@@ -108,7 +108,7 @@ const NestedTable: React.FC<NestedTableProps> = ({ data, updateAmortizationItem 
     // update 
     updateAmortizationItem(item);
     // fetch new values
-    
+
   }
 
   const handleEdit = (historyRow: IAmortizationScheduleItem): void => {
@@ -116,29 +116,33 @@ const NestedTable: React.FC<NestedTableProps> = ({ data, updateAmortizationItem 
     setAmortizationScheduleItem(historyRow)
   }
   return (
-    <><TableContainer component={Paper}>
-      <Table aria-label="collapsible table">
-        <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell>Year</TableCell>
-            <TableCell align="left">Begining Balance</TableCell>
-            <TableCell align="left">Emi Paid&nbsp;(Yr)</TableCell>
-            <TableCell align="left">Principal Paid&nbsp;(Yr)</TableCell>
-            <TableCell align="left">Interest Paid&nbsp;(Yr)</TableCell>
-            <TableCell align="left">Part Payment&nbsp;(Yr)</TableCell>
-            <TableCell align="left">Closing Balance</TableCell>
+    <Paper
+      sx={{ p: 2, display: 'flex', flexDirection: 'column' }}
+    >
+      <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell />
+              <TableCell>Year</TableCell>
+              <TableCell align="left">Begining Balance</TableCell>
+              <TableCell align="left">Emi Paid&nbsp;(Yr)</TableCell>
+              <TableCell align="left">Principal Paid&nbsp;(Yr)</TableCell>
+              <TableCell align="left">Interest Paid&nbsp;(Yr)</TableCell>
+              <TableCell align="left">Part Payment&nbsp;(Yr)</TableCell>
+              <TableCell align="left">Closing Balance</TableCell>
 
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((row: IAmortizationScheduleItemByYear) => (
-            <Row key={row.year} row={row} edit={handleEdit} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-      <FormDataModal open={openModal} onClose={oncloseModal} item={amortizationScheduleItem}></FormDataModal></>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((row: IAmortizationScheduleItemByYear) => (
+              <Row key={row.year} row={row} edit={handleEdit} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <FormDataModal open={openModal} onClose={oncloseModal} item={amortizationScheduleItem}></FormDataModal>
+    </Paper>
 
   );
 };
