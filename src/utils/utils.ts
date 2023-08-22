@@ -1,28 +1,27 @@
 import moment from 'moment';
 import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, State } from '../type';
+import { LoanDetails } from '../Domain/FormField';
 export const calcAmortizationScheduleItems = (state: State) => {
 
     const { emiMap, extraPaymentMap, interestMap, loanDet } = state;
-
-
     const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];
     const principal = loanDet.principal as number;
     const interestRate = loanDet.interestRate as number;
     const tenure = loanDet.tenure as number;
     const startDate = loanDet.startDate as Date;
     let initialEmi = calculateEmi(interestRate, tenure, principal)
-    
+
 
     let currentDate = moment(startDate);
     let endingBalance: number = principal as number;
 
-   
+
 
     for (let index = 1; endingBalance > 0; index++) {
 
         let extraPaymentForThisInstallment: number = extraPaymentMap.get(index) ?? 0;
-        let interestRateMnth: number = interestMap.get(index) ?? interestRate;
-        let emi: number = emiMap.get(index) ?? initialEmi ;
+        let interestRateMnth: number = interestMap?.get(index) ?? interestRate;
+        let emi: number = emiMap?.get(index) ?? initialEmi;
 
 
         const month: string = currentDate.add(1, 'M').format('MMM-YYYY');

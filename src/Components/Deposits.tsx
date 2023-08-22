@@ -2,6 +2,7 @@ import * as React from 'react';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Title from './Title';
+import { Paper } from '@mui/material';
 
 function preventDefault(event: React.MouseEvent) {
   event.preventDefault();
@@ -9,7 +10,14 @@ function preventDefault(event: React.MouseEvent) {
 
 export default function Deposits() {
   return (
-    <React.Fragment>
+    <Paper
+      sx={{
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        height: 240,
+      }}
+    >
       <Title>Recent Deposits</Title>
       <Typography component="p" variant="h4">
         $3,024.00
@@ -22,6 +30,6 @@ export default function Deposits() {
           View balance
         </Link>
       </div>
-    </React.Fragment>
+    </Paper>
   );
 }

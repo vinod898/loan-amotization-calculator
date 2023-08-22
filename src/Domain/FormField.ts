@@ -4,5 +4,8 @@ export type FormField = {
     value: number | Date
 }
 export type LoanDetails = {
-    [key: string]: number | Date;
+    principal: number,
+    interestRate: number,
+    tenure: number,
+    startDate:  Date;
 }

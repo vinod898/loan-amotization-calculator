@@ -4,7 +4,8 @@ import {
   UPDATE_AMORTIZATION_ITEM,
   UPDATE_LOAN_DETAILS,
   SAVE_STATE,
-  GET_STATE
+  GET_STATE,
+  RESET_AMORTIZATION
 } from './actionTypes';
 import { AmortizationScheduleAction, IAmortizationScheduleItem } from '../type'; // Adjust the import path
 import { LoanDetails } from '../Domain/FormField';
@@ -59,3 +60,9 @@ export const updateAmortizationItem = (
     payload: updatedItem,
   });
 };
+
+
+
+export const resetAmortization = () => ({
+  type: RESET_AMORTIZATION,
+});

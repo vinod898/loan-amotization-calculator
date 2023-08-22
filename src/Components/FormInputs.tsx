@@ -1,122 +1,171 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
-import InputBox from './InputBox';
-import { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Paper, TextField } from '@mui/material';
 import { FormField, LoanDetails } from '../Domain/FormField';
-import { connect, useSelector } from 'react-redux';
 import store, { RootState } from '../store/store';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 
 
 interface TitleProps {
     onSubmit: (loanDetails: LoanDetails) => void;
+    loanDetails: LoanDetails;
 }
 
 
-let items: FormField[] = [
-    { id: 1, name: "principal", value: 0 },
-    { id: 2, name: "interestRate", value: 0 },
-    { id: 3, name: "tenure", value: 0 },
-    { id: 4, name: "startDate", value: new Date() },
-];
+
+export default function FormInputs({ loanDetails: temp, onSubmit }: TitleProps) {
 
 
-export default function FormInputs(props: TitleProps) {
+    const [principal, setPrincipal] = useState(0);
+    const [interestRate, setInterestRate] = useState(0);
+    const [tenure, setTenure] = useState(0);
+    const [startDate, setStartDate] = useState(new Date());
 
-    // store
-    const storeState: RootState = store.getState();
-    const loanDet = storeState.amortization.loanDet;
-    const [inputItems, setInputItems] = useState(items);
-    const [showBtn, setShowBtn] = useState(false);
+    const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.loanDet);
+    const [initialLoanDetails, setInitialLoanDetails] = useState({} as LoanDetails);
 
     React.useEffect(() => {
-        if (loanDet) {
-            items = items.map(x => {
-                const key = x.name;
-                const value = key === "startDate" ?
-                    loanDet[key] ? new Date(loanDet[key]) : new Date() :
-                    loanDet[key] ?? 0;
-                x.value = value
-                return x;
-            });
-            setInputItems(items)
+        console.log('previous values...',initialLoanDet)
+        setInitialLoanDetails(initialLoanDet)
+        if ('principal' in initialLoanDet
+            && 'interestRate' in initialLoanDet
+            && 'tenure' in initialLoanDet
+            && 'startDate' in initialLoanDet) {
+            setPrincipal(initialLoanDet.principal);
+            setInterestRate(initialLoanDet.interestRate);
+            setTenure(initialLoanDet.tenure);
+            setStartDate(new Date(initialLoanDetails.startDate));
+            onSubmit(initialLoanDet);
         }
+    }, [initialLoanDetails]);
 
-    }, items);
-
-
-
-
-
-
-
-    const { onSubmit } = props;
-    const handleSubmit = () => {
-        let loanDetails: LoanDetails = {};
-        for (let item of items) {
-            const { name, value } = item;
-            if (name == 'startDate') {
-                loanDetails[name] = value as Date;
-            } else {
-                loanDetails[name] = value as number;
-            }
-        }
-        onSubmit(loanDetails);
+    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.target as HTMLFormElement);
+        const principal = Number(formData.get("principal"));
+        const interestRate = Number(formData.get("interestRate"));
+        const tenure = Number(formData.get("tenure"));
+        const date = formData.get("startDate") as string;
+        const startDate = new Date(date);
+        const loanDet1 = { ...initialLoanDetails, principal, interestRate, tenure, startDate };
+        onSubmit(loanDet1);
+        
     };
 
-    const validate = () => {
-        let validateFlag = true;
-        for (let item of items) {
-            const { value } = item;
-            if (!value) {
-                validateFlag = false;
-                break;
-            }
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        const { name, value } = event.target;
+        console.log({ name, value })
+        if (name === 'principal') {
+            setPrincipal(Number(value));
+        } else if (name === 'interestRate') {
+            setInterestRate(Number(value));
+        } else if (name === 'tenure') {
+            setTenure(Number(value));
+        } else if (name === 'startDate') {
+            setStartDate(new Date(value));
         }
-        if (validateFlag) setShowBtn(false)
-        else setShowBtn(true)
-
-    };
-
-    // Function to set value based on name
-    const setValueByName = (name: string, value: number | Date): void => {
-        items.forEach((item) => {
-            if (item.name === name) {
-                item.value = value;
-            }
-        });
-    };
-    // initially call validate
-
+    }
     return (
         <React.Fragment>
-            <Grid container spacing={1}>
-                {inputItems.map((item, index) => {
-                    const { name, value } = item;
-                    return (
-                        <Grid container item spacing={3} xs={12} key={index}>
-                            <InputBox name={name}
-                                value={value}
-                                setValueByName={setValueByName}
-                                validate={validate} />
-                        </Grid>
-                    );
-                })}
-                <Grid item xs={12}>
-                    <Button
-                        type="button"
-                        variant="contained"
-                        color="primary"
-                        disabled={showBtn}
-                        onClick={handleSubmit}>
-                        Submit
-                    </Button>
+            <div>
+
+            </div>
+            <Paper
+                sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: 'auto',
+                }}
+            >
+                <Grid container spacing={1}>
+                    <form onSubmit={submit}>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="principal"
+                            label="Principal"
+                            name="principal"
+                            autoComplete="principal"
+                            type="number"
+                            autoFocus
+                            value={principal}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="interestRate"
+                            label="Interest Rate"
+                            name="interestRate"
+                            autoComplete="interestRate"
+                            type=""
+                            autoFocus
+                            value={interestRate}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="tenure"
+                            label="Tenure"
+                            name="tenure"
+                            autoComplete="tenure"
+                            type="number"
+                            autoFocus
+                            value={tenure}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="startDate"
+                            label="Start Date"
+                            name="startDate"
+                            autoComplete="startDate"
+                            type="date"
+                            autoFocus
+                            value={formatDate(startDate)}
+                            onChange={handleInputChange}
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+
+                        >
+                            Calculate
+                        </Button>
+                    </form>
                 </Grid>
-            </Grid>
+            </Paper>
         </React.Fragment>
     );
 }
 
+
+
+
+function formatDate(date: Date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 

@@ -2,6 +2,7 @@
 import {
   GET_AMORTIZATION_ITEMS,
   GET_STATE,
+  RESET_AMORTIZATION,
   SAVE_STATE,
   UPDATE_AMORTIZATION_ITEM,
   UPDATE_LOAN_DETAILS
@@ -74,24 +75,68 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
           )
         })
       amortizationScheduleItems = [];
-      return {
+      state = {
         ...state,
         amortizationScheduleItems,
-      };
+      }
+      return state;
     case SAVE_STATE:
-      localStorage.setItem(action.payload, JSON.stringify(state));
+      const json = JSON.stringify(
+        {
+          ...state,
+          amortizationScheduleItems: [],
+          emiMap: serializeMap(state.emiMap),
+          extraPaymentMap: serializeMap(state.extraPaymentMap),
+          interestMap: serializeMap(state.interestMap),
+          showTable: false,
+        }
+      )
+      localStorage.setItem(action.payload, json);
       return state;
     case GET_STATE:
       const data = localStorage.getItem(action.payload);
-      const newState = data ? {
+      if (data) {
+        const jsonData = JSON.parse(data);
+        const emiMap = deserializeMap(jsonData.emiMap as string);
+        const extraPaymentMap = deserializeMap(jsonData.extraPaymentMap as string);
+        const interestMap = deserializeMap(jsonData.interestMap as string);
+        const loanDet = (jsonData.loanDet as LoanDetails);
+        
+        state = {
+          ...state,
+          emiMap,
+          extraPaymentMap,
+          interestMap,
+          loanDet
+        }
+      }
+      return state;
+    case RESET_AMORTIZATION:
+      return {
         ...state,
-        ...(JSON.parse(data) as State),
-      } : state;
-      return newState;
-
+        amortizationScheduleItems: [],
+        showTable: false,
+        interestMap: new Map<number, number>(),
+        emiMap: new Map<number, number>(),
+        extraPaymentMap: new Map<number, number>(),
+        loanDet: {}
+      };
     default:
       return state;
   }
 };
 
 export default reducer;
+// Serialize a Map to a JSON-safe object
+const serializeMap = (map: Map<number, number>) => {
+  // Convert the Map to an array of key-value pairs
+  const serializedMap = Array.from(map);
+  return JSON.stringify(serializedMap);
+}
+
+// Deserialize a JSON-safe object back to a Map
+const deserializeMap = (serializedStr: string): Map<number, number> => {
+  const serializedMap = JSON.parse(serializedStr);
+  return new Map<number, number>(serializedMap);
+};
+
