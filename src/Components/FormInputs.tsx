@@ -27,7 +27,6 @@ export default function FormInputs({ loanDetails: temp, onSubmit }: TitleProps) 
     const [initialLoanDetails, setInitialLoanDetails] = useState({} as LoanDetails);
 
     React.useEffect(() => {
-        console.log('previous values...',initialLoanDet)
         setInitialLoanDetails(initialLoanDet)
         if ('principal' in initialLoanDet
             && 'interestRate' in initialLoanDet
@@ -56,7 +55,6 @@ export default function FormInputs({ loanDetails: temp, onSubmit }: TitleProps) 
 
     function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
         const { name, value } = event.target;
-        console.log({ name, value })
         if (name === 'principal') {
             setPrincipal(Number(value));
         } else if (name === 'interestRate') {

@@ -26,6 +26,7 @@ import { RootState } from '../store/store';
 import { showTableSelector } from '../store/AmortizationSelectors';
 import DrawerComponent from './Drawer';
 import HeaderComponent from './Header';
+import Summery from './summery';
 
 
 
@@ -115,15 +116,15 @@ const Dashboard: React.FC<DashboardProps> = ({
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {/*  form input */}
-              <Grid item xs={12} md={8} lg={9}>
+              <Grid item xs={9} md={9} lg={9}>
                 <FormInputs onSubmit={onSubmitCallBack} loanDetails={initialLoanDet} />
               </Grid>
 
               {/* amortizationScheduleItems */}
               {showTable && (
                 <React.Fragment>
-                  <Grid item xs={12} md={4} lg={3}>
-                    <Deposits />
+                  <Grid item xs={3} md={3} lg={3}>
+                    <Summery data={amortizationScheduleItems} loanDetails={initialLoanDet} />
                   </Grid>
                   <Grid item xs={12}>
                     <NestedTable

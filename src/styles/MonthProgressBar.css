@@ -1,0 +1,17 @@
+.progress-container {
+    position: relative;
+  }
+  
+  .number-container {
+    position: absolute;
+    top: -24px; /* Adjust as needed */
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  .progress-number {
+    position: absolute;
+    transform: translateX(-50%); /* Center the number */
+  }
+  
