@@ -15,7 +15,7 @@ export default function Deposits() {
         p: 2,
         display: 'flex',
         flexDirection: 'column',
-        height: 240,
+        height: 'auto',
       }}
     >
       <Title>Recent Deposits</Title>
