@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
-import SignInSide from './login';
-import SignUp from './signup'; // Import your Home component
+import SignInSide from './auth/login';
+import SignUp from './auth/signup'; // Import your Home component
 import Dashboard from './Dashboard';
 
 export const AppRoutes = () => (

@@ -14,6 +14,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
+import { auth } from "../../Config/firebase-config"
+import { UserCredential, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import * as authService from "../../Services/authService";
+import { User } from "../../Domain/user";
 
 const MadeWithLove = () => (
   <Typography variant="body2" color="textSecondary" align="center">
@@ -57,17 +61,14 @@ const useStyles = makeStyles((theme: Theme) => ({
 const SignInSide = () => {
   const classes = useStyles();
   const navigate = useNavigate();
-
-
-  const handleSignIn = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const formData = new FormData(event.target as HTMLFormElement);
-
-    // Access form field values using the 'name' attribute
-    const email = formData.get("email");
-    const password = formData.get("password");
-    navigate(`/dashboard/${email}`);
+    let user: User = Object.fromEntries(formData.entries()) as unknown as User;
+    const fireBaseUser: User = await authService.signInUser(user);
+    if (fireBaseUser.id) {
+      navigate(`/dashboard/${fireBaseUser.email}`);
+    }
   };
 
   return (
