@@ -17,7 +17,6 @@ import { useParams } from "react-router-dom";
 import {
   getAmortizationItems,
   getState,
-  saveState,
   updateAmortizationItem,
   updateLoadDetails,
   resetAmortization
@@ -34,7 +33,6 @@ interface DashboardProps {
   getAmortizationItems: () => void;
   updateLoadDetails: (loanDet: LoanDetails) => void;
   updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
-  saveState: (user: string) => void;
   getState: (user: string) => void;
   resetAmortization: () => void;
 }
@@ -45,7 +43,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   getAmortizationItems,
   updateLoadDetails,
   updateAmortizationItem,
-  saveState,
   getState,
   resetAmortization
   // ... (rest of the props)
@@ -78,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     getAmortizationItems();
   };
   const toggleDrawer = () => setOpen(!open);
-  const handleSaveClick = () => saveState(profileName);
+  const handleSaveClick = () => {} //saveState(profileName);
   const handleSignOut = () => {
     resetAmortization();
     navigate('/');
@@ -149,7 +146,6 @@ export default connect(mapStateToProps, {
   getAmortizationItems,
   updateLoadDetails,
   updateAmortizationItem,
-  saveState,
   getState,
   resetAmortization
 })(Dashboard);

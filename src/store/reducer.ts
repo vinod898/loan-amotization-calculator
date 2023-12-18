@@ -3,7 +3,7 @@ import {
   GET_AMORTIZATION_ITEMS,
   GET_STATE,
   RESET_AMORTIZATION,
-  SAVE_STATE,
+  SET_STATE,
   UPDATE_AMORTIZATION_ITEM,
   UPDATE_LOAN_DETAILS
 } from './actionTypes';
@@ -80,36 +80,10 @@ const reducer = (state: State = initialState, action: AmortizationScheduleAction
         amortizationScheduleItems,
       }
       return state;
-    case SAVE_STATE:
-      const json = JSON.stringify(
-        {
-          ...state,
-          amortizationScheduleItems: [],
-          emiMap: serializeMap(state.emiMap),
-          extraPaymentMap: serializeMap(state.extraPaymentMap),
-          interestMap: serializeMap(state.interestMap),
-          showTable: false,
-        }
-      )
-      localStorage.setItem(action.payload, json);
+    case SET_STATE:
+     console.log(state)
       return state;
     case GET_STATE:
-      const data = localStorage.getItem(action.payload);
-      if (data) {
-        const jsonData = JSON.parse(data);
-        const emiMap = deserializeMap(jsonData.emiMap as string);
-        const extraPaymentMap = deserializeMap(jsonData.extraPaymentMap as string);
-        const interestMap = deserializeMap(jsonData.interestMap as string);
-        const loanDet = (jsonData.loanDet as LoanDetails);
-        
-        state = {
-          ...state,
-          emiMap,
-          extraPaymentMap,
-          interestMap,
-          loanDet
-        }
-      }
       return state;
     case RESET_AMORTIZATION:
       return {
