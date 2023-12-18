@@ -4,7 +4,7 @@ import { AmortizationData } from '../Domain/AmortizationData';
 
 const amortizationCollectionref = collection(db, "Amortization")
 
-export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentData>) => {
+export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentData>): Promise<AmortizationData[]> => {
     let amartizationDataList: AmortizationData[] = [] as AmortizationData[];
     try {
         const data = await getDocs(dbQuery);
@@ -22,8 +22,8 @@ export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentD
     return amartizationDataList;
 }
 
-export const getAmartizationActualDataByUserId = async (userId: string) => {
-    console.log({userId})
+export const getAmartizationActualDataByUserId = async (userId: string): Promise<AmortizationData[]> => {
+    console.log({ userId })
     const dbQuery = query(amortizationCollectionref,
         where('userId', '==', userId),
         where('type', '==', "actual")
@@ -31,7 +31,7 @@ export const getAmartizationActualDataByUserId = async (userId: string) => {
     return await getAmartizationData(dbQuery)
 }
 
-export const getAmartizationForeCastDataByUserId = async (userId: string) => {
+export const getAmartizationForeCastDataByUserId = async (userId: string): Promise<AmortizationData[]> => {
     const dbQuery = query(amortizationCollectionref,
         where('userId', '==', userId),
         where('type', '==', "foreCast")

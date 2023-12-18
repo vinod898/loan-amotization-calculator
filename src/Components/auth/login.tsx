@@ -18,9 +18,6 @@ import * as authService from "../../Services/authService";
 import * as amortizationService from "../../Services/amortizationService";
 import { User } from "../../Domain/user";
 import { AmortizationData } from "../../Domain/AmortizationData";
-import { LoanDetails } from "../../Domain/FormField";
-import { IAmortizationScheduleItem } from "../../type";
-import { GoogleLogin } from "react-google-login";
 
 
 
@@ -76,16 +73,18 @@ const SignInSide: React.FC<LoginProps> = ({ setState }) => {
     let user: User = Object.fromEntries(formData.entries()) as unknown as User;
     const fireBaseUser: User = await authService.signInUser(user);
     if (fireBaseUser.id) {
-      const data = await amortizationService.getAmartizationActualDataByUserId(fireBaseUser.id);
-      console.log(data)
+      const amortizationData: AmortizationData[] = await amortizationService.getAmartizationActualDataByUserId(fireBaseUser.id);
+      console.log(amortizationData)
       navigate(`/dashboard/${fireBaseUser.email}`);
     }
   };
 
   const signInWithGoogle = async () => {
     try {
-      const fireBaseUser: User= await authService.signInWithGoogle();
+      const fireBaseUser: User = await authService.signInWithGoogle();
       if (fireBaseUser?.id) {
+        const amortizationData: AmortizationData[] = await amortizationService.getAmartizationActualDataByUserId(fireBaseUser.id);
+        console.log(amortizationData)
         navigate(`/dashboard/${fireBaseUser.email}`);
       }
       // Access user information from result.user
