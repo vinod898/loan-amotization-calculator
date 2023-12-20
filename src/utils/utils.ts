@@ -1,14 +1,14 @@
 import moment from 'moment';
-import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, State } from '../type';
-import { LoanDetails } from '../Domain/FormField';
-export const calcAmortizationScheduleItems = (state: State) => {
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
+import { AmortizationMetaData } from '../Domain/AmortizationData';
+export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): IAmortizationScheduleItemByYear[] => {
 
-    const { emiMap, extraPaymentMap, interestMap, loanDet } = state;
+    const { emiMap, extraPaymentMap, interestMap, loanDetails } = amortizationMetaData;
     const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];
-    const principal = loanDet.principal as number;
-    const interestRate = loanDet.interestRate as number;
-    const tenure = loanDet.tenure as number;
-    const startDate = loanDet.startDate as Date;
+    const principal = loanDetails.principal as number;
+    const interestRate = loanDetails.interestRate as number;
+    const tenure = loanDetails.tenure as number;
+    const startDate = loanDetails.startDate as Date;
     let initialEmi = calculateEmi(interestRate, tenure, principal)
 
 
@@ -131,4 +131,5 @@ const reArrangeSchedule = (
         amortizationScheduleItemsByYear.push(yearItem)
     }
 }
+
 

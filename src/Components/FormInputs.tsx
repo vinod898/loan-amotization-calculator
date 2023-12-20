@@ -2,7 +2,6 @@ import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import { Button, Paper, TextField } from '@mui/material';
 import { FormField, LoanDetails } from '../Domain/FormField';
-import store, { RootState } from '../store/store';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -15,28 +14,29 @@ interface TitleProps {
 
 
 
-export default function FormInputs({ loanDetails: temp, onSubmit }: TitleProps) {
+export default function FormInputs({ loanDetails , onSubmit }: TitleProps) {
 
 
     const [principal, setPrincipal] = useState(0);
     const [interestRate, setInterestRate] = useState(0);
     const [tenure, setTenure] = useState(0);
     const [startDate, setStartDate] = useState(new Date());
+    const [initialLoanDetails, setInitialLoanDetails] = useState(loanDetails);
 
-    const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.loanDet);
-    const [initialLoanDetails, setInitialLoanDetails] = useState({} as LoanDetails);
+    // const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.amortizationMetaData.loanDetails);
+    // 
 
     React.useEffect(() => {
-        setInitialLoanDetails(initialLoanDet)
-        if ('principal' in initialLoanDet
-            && 'interestRate' in initialLoanDet
-            && 'tenure' in initialLoanDet
-            && 'startDate' in initialLoanDet) {
-            setPrincipal(initialLoanDet.principal);
-            setInterestRate(initialLoanDet.interestRate);
-            setTenure(initialLoanDet.tenure);
+        setInitialLoanDetails(loanDetails)
+        if ('principal' in loanDetails
+            && 'interestRate' in loanDetails
+            && 'tenure' in loanDetails
+            && 'startDate' in loanDetails) {
+            setPrincipal(loanDetails.principal);
+            setInterestRate(loanDetails.interestRate);
+            setTenure(loanDetails.tenure);
             setStartDate(new Date(initialLoanDetails.startDate));
-            onSubmit(initialLoanDet);
+            onSubmit(loanDetails);
         }
     }, [initialLoanDetails]);
 
@@ -48,7 +48,7 @@ export default function FormInputs({ loanDetails: temp, onSubmit }: TitleProps) 
         const tenure = Number(formData.get("tenure"));
         const date = formData.get("startDate") as string;
         const startDate = new Date(date);
-        const loanDet1 = { ...initialLoanDetails, principal, interestRate, tenure, startDate };
+        const loanDet1 = { ...loanDetails, principal, interestRate, tenure, startDate };
         onSubmit(loanDet1);
         
     };

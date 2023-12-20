@@ -1,17 +1,18 @@
-import { getDocs, collection, query, where, and, DocumentData, Query } from 'firebase/firestore';
+import { getDocs, collection, query, where, DocumentData, Query } from 'firebase/firestore';
 import { db } from '../Config/firebase-config';
-import { AmortizationData } from '../Domain/AmortizationData';
+import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { User } from '../Domain/user';
 
 const amortizationCollectionref = collection(db, "Amortization")
 
-export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentData>): Promise<AmortizationData[]> => {
-    let amartizationDataList: AmortizationData[] = [] as AmortizationData[];
+export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentData>): Promise<AmortizationMetaData[]> => {
+    let amartizationDataList: AmortizationMetaData[] = [] as AmortizationMetaData[];
     try {
         const data = await getDocs(dbQuery);
         data.docs
             .map(doc => {
                 const { userId, type, loanDetails, interestMap, emiMap, extraPaymentMap } = doc.data();
-                const amartizationData: AmortizationData = {
+                const amartizationData: AmortizationMetaData = {
                     emiMap, extraPaymentMap, id: doc.id, interestMap, loanDetails, type, userId
                 }
                 amartizationDataList.push(amartizationData);
@@ -21,20 +22,20 @@ export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentD
     }
     return amartizationDataList;
 }
-
-export const getAmartizationActualDataByUserId = async (userId: string): Promise<AmortizationData[]> => {
-    console.log({ userId })
-    const dbQuery = query(amortizationCollectionref,
-        where('userId', '==', userId),
-        where('type', '==', "actual")
-    );
-    return await getAmartizationData(dbQuery)
-}
-
-export const getAmartizationForeCastDataByUserId = async (userId: string): Promise<AmortizationData[]> => {
+export const getAmartizationForeCastDataByUserId = async (userId: string): Promise<AmortizationMetaData[]> => {
     const dbQuery = query(amortizationCollectionref,
         where('userId', '==', userId),
         where('type', '==', "foreCast")
     );
     return await getAmartizationData(dbQuery)
 }
+
+
+export const getAmortizationactualMetaData = async (person: User): Promise<AmortizationMetaData[]> => {
+
+   
+    const dbQuery = query(amortizationCollectionref,
+        where('userId', '==', person.id),
+        where('type', '==', "actual"));
+    return await getAmartizationData(dbQuery);
+    }

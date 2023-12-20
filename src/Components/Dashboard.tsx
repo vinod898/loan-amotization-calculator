@@ -6,78 +6,46 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import Deposits from './Deposits';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
-
-import {
-  getAmortizationItems,
-  getState,
-  updateAmortizationItem,
-  updateLoadDetails,
-  resetAmortization
-} from '../store/actions';
-import { RootState } from '../store/store';
-import { showTableSelector } from '../store/AmortizationSelectors';
 import DrawerComponent from './Drawer';
 import HeaderComponent from './Header';
 import Summery from './summery';
+import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { calcAmortizationScheduleItems } from '../utils/utils';
 
 
-
-interface DashboardProps {
-  getAmortizationItems: () => void;
-  updateLoadDetails: (loanDet: LoanDetails) => void;
-  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
-  getState: (user: string) => void;
-  resetAmortization: () => void;
-}
-// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-const Dashboard: React.FC<DashboardProps> = ({
-  getAmortizationItems,
-  updateLoadDetails,
-  updateAmortizationItem,
-  getState,
-  resetAmortization
-  // ... (rest of the props)
-}) => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  const [loanDetails, setLoanDetails] = React.useState({} as LoanDetails);
+  const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItemByYear[]);
   const { param: profileName = "No Name" } = useParams();
 
-  React.useEffect(() => {
-    getState(profileName);
-  }, []); // Empty dependency array to run only on mount
 
 
-
-  const showTable = useSelector(showTableSelector);
-  const amortizationScheduleItems = useSelector(
-    (state: RootState) => state.amortization.amortizationScheduleItems
-  );
-  const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.loanDet);
-  
   const [open, setOpen] = React.useState(true);
 
 
   const onSubmitCallBack = (loanDet: LoanDetails) => {
-    updateLoadDetails(loanDet);
-    getAmortizationItems();
+    // updateLoadDetails(loanDet);
+    // getAmortizationItems();
   };
   const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
-    updateAmortizationItem(updatedItem);
-    getAmortizationItems();
+
+    // updateAmortizationItem(updatedItem);
+    // getAmortizationItems();
   };
   const toggleDrawer = () => setOpen(!open);
-  const handleSaveClick = () => {} //saveState(profileName);
+  const handleSaveClick = () => { } //saveState(profileName);
   const handleSignOut = () => {
-    resetAmortization();
+    //  resetAmortization();
     navigate('/');
   };
 
@@ -88,13 +56,11 @@ const Dashboard: React.FC<DashboardProps> = ({
         <HeaderComponent
           {...{
             open,
-            showTable,
             toggleDrawer,
             name: profileName,
             handleSaveClick,
             handleSignOut,
-          }}
-        />
+          }} />
 
         <DrawerComponent open={open} toggleDrawer={toggleDrawer}></DrawerComponent>
         <Box
@@ -114,14 +80,14 @@ const Dashboard: React.FC<DashboardProps> = ({
             <Grid container spacing={3}>
               {/*  form input */}
               <Grid item xs={9} md={9} lg={9}>
-                <FormInputs onSubmit={onSubmitCallBack} loanDetails={initialLoanDet} />
+                <FormInputs onSubmit={onSubmitCallBack} loanDetails={loanDetails} />
               </Grid>
 
               {/* amortizationScheduleItems */}
-              {showTable && (
+              {amortizationScheduleItems.length > 0 && (
                 <React.Fragment>
                   <Grid item xs={3} md={3} lg={3}>
-                    <Summery data={amortizationScheduleItems} loanDetails={initialLoanDet} />
+                    <Summery data={amortizationScheduleItems} loanDetails={loanDetails} />
                   </Grid>
                   <Grid item xs={12}>
                     <NestedTable
@@ -137,15 +103,5 @@ const Dashboard: React.FC<DashboardProps> = ({
     </ThemeProvider>
   );
 }
-const mapStateToProps = (state: RootState) => ({
-  amortizationScheduleItems: state.amortization.amortizationScheduleItems,
-  showTable: showTableSelector(state),
-});
 
-export default connect(mapStateToProps, {
-  getAmortizationItems,
-  updateLoadDetails,
-  updateAmortizationItem,
-  getState,
-  resetAmortization
-})(Dashboard);
+export default Dashboard;

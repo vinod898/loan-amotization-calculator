@@ -1,4 +1,6 @@
 import { Moment } from "moment";
+import { User } from "./Domain/user";
+import { AmortizationMetaData } from "./Domain/AmortizationData";
 
 interface IAmortizationScheduleItemByYear {
   id: number;
@@ -26,22 +28,20 @@ interface IAmortizationScheduleItem {
   interestRateMnth: number;
 }
 
+
+type RootState  = {
+  amortizationMetaData: AmortizationMetaData,
+  person: User
+}
+
+
 type AmortizationScheduleItemState = {
   amortizationScheduleItems: IAmortizationScheduleItemByYear[];
 };
 
 type AmortizationScheduleAction = {
   type: string;
-  payload?:  LoanDetails | IAmortizationScheduleItem;
+  payload: User | AmortizationMetaData;
 };
 
 type DispatchType = (args: AmortizationScheduleAction) => AmortizationScheduleAction;
-
-interface State {
-  amortizationScheduleItems: IAmortizationScheduleItemByYear[];
-  showTable: boolean;
-  interestMap: Map<number, number>;
-  emiMap: Map<number, number>;
-  extraPaymentMap: Map<number, number>;
-  loanDet: LoanDetails
-}

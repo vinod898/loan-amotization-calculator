@@ -1,6 +1,6 @@
 import { LoanDetails } from "./FormField";
 
-export interface AmortizationData {
+export interface AmortizationMetaData {
     id: string;
     userId: string;
     type: string;

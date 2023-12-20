@@ -15,15 +15,9 @@ import Typography from "@mui/material/Typography";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
 import * as authService from "../../Services/authService";
-import * as amortizationService from "../../Services/amortizationService";
 import { User } from "../../Domain/user";
-import { AmortizationData } from "../../Domain/AmortizationData";
 
 
-
-interface LoginProps {
-  setState?: (user: AmortizationData[]) => void;
-}
 
 const MadeWithLove = () => (
   <Typography variant="body2" color="textSecondary" align="center">
@@ -64,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const SignInSide: React.FC<LoginProps> = ({ setState }) => {
+const SignInSide: React.FC = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -73,8 +67,6 @@ const SignInSide: React.FC<LoginProps> = ({ setState }) => {
     let user: User = Object.fromEntries(formData.entries()) as unknown as User;
     const fireBaseUser: User = await authService.signInUser(user);
     if (fireBaseUser.id) {
-      const amortizationData: AmortizationData[] = await amortizationService.getAmartizationActualDataByUserId(fireBaseUser.id);
-      console.log(amortizationData)
       navigate(`/dashboard/${fireBaseUser.email}`);
     }
   };
@@ -83,8 +75,6 @@ const SignInSide: React.FC<LoginProps> = ({ setState }) => {
     try {
       const fireBaseUser: User = await authService.signInWithGoogle();
       if (fireBaseUser?.id) {
-        const amortizationData: AmortizationData[] = await amortizationService.getAmartizationActualDataByUserId(fireBaseUser.id);
-        console.log(amortizationData)
         navigate(`/dashboard/${fireBaseUser.email}`);
       }
       // Access user information from result.user
@@ -164,5 +154,7 @@ const SignInSide: React.FC<LoginProps> = ({ setState }) => {
     </Grid>
   );
 };
+
+
 
 export default SignInSide;

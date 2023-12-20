@@ -34,7 +34,6 @@ const AppBar = styled(MuiAppBar, {
 
 
 interface HeaderComponentProps {
-  showTable: boolean;
   open: boolean; // Explicitly define the type as boolean
   toggleDrawer: () => void;
   handleSaveClick: () => void;
@@ -47,7 +46,6 @@ interface AppBarProps extends MuiAppBarProps {
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({
-  showTable,
   open,
   toggleDrawer,
   handleSaveClick,
@@ -111,7 +109,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
         >
           Loan Amortization
         </Typography>
-        {showTable && <IconButton color="inherit" onClick={handleSaveClick}>
+        {<IconButton color="inherit" onClick={handleSaveClick}>
           <SaveIcon sx={{ color: 'white' }} />
         </IconButton>}
         <Avatar
