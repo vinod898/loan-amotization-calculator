@@ -1,29 +1,18 @@
 import moment from 'moment';
-import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, GraphDetails } from '../type';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
-export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): IAmortizationScheduleItemByYear[] => {
+export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): AmortizationMetaData => {
 
-    const { emiMap, extraPaymentMap, interestMap, loanDetails } = amortizationMetaData;
-    const amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[] = [];
-    const principal = loanDetails.principal as number;
-    const interestRate = loanDetails.interestRate as number;
-    const tenure = loanDetails.tenure as number;
-    const startDate = loanDetails.startDate as Date;
+    const { emiMap, extraPaymentMap, interestMap, loanDetails: { interestRate, principal, startDate, tenure } } = amortizationMetaData;
     let initialEmi = calculateEmi(interestRate, tenure, principal)
-
-
     let currentDate = moment(startDate);
-    let endingBalance: number = principal as number;
-
-
+    let endingBalance: number = principal;
+    const amortizationScheduleItemsByYearMap: Map<string, IAmortizationScheduleItem[]> = new Map();
 
     for (let index = 1; endingBalance > 0; index++) {
-
-        let extraPaymentForThisInstallment: number = extraPaymentMap.get(index) ?? 0;
+        let extraPaymentForThisInstallment: number = extraPaymentMap?.get(index) ?? 0;
         let interestRateMnth: number = interestMap?.get(index) ?? interestRate;
         let emi: number = emiMap?.get(index) ?? initialEmi;
-
-
         const month: string = currentDate.add(1, 'M').format('MMM-YYYY');
         const beginingBalance: number = endingBalance;
         // calculate roi  
@@ -61,9 +50,96 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
             extraPayment: Math.round(extraPaymentForThisInstallment),
             interestRateMnth: interestRateMnth
         }
-        reArrangeSchedule(item, amortizationScheduleItemsByYear)
+        const currentYear = currentDate.get('M') < 3 ? currentDate.get('year') - 1 : currentDate.get('year');
+        const finacialYear = `${currentYear} - ${currentYear + 1}`;
+
+
+        if (!amortizationScheduleItemsByYearMap.has(finacialYear)) {
+            amortizationScheduleItemsByYearMap.set(finacialYear, []);
+        }
+        const amortizationScheduleItems: IAmortizationScheduleItem[] = amortizationScheduleItemsByYearMap.get(finacialYear) || [];
+        amortizationScheduleItems.push(item);
+        amortizationScheduleItemsByYearMap.set(finacialYear, amortizationScheduleItems);
+        // reArrangeSchedule(item, amortizationMetaData)
     }
-    return amortizationScheduleItemsByYear;
+    let yearIndex = 1;
+    /// calculate yearly aggregations
+    if (!amortizationMetaData?.amortizationScheduleItemsByYear) {
+        amortizationMetaData.amortizationScheduleItemsByYear = []
+    }
+    for (const [finacialYear, amortizationScheduleItems] of amortizationScheduleItemsByYearMap) {
+
+        let beginingBalance = 0;
+        let endingBalance = 0;
+        let totalEmiPayMentByYear = 0;
+        let totalPrincipalPaidByYear = 0;
+        let totalInterestPaidByYear = 0;
+        let totalExtraPayPaidByYear = 0;
+
+
+        amortizationScheduleItems.forEach((item, i) => {
+            if (i === 0) {
+                beginingBalance = item.beginingBalance
+            }
+            if (i === (amortizationScheduleItems.length - 1)) {
+                endingBalance = item.endingBalance
+            }
+            totalEmiPayMentByYear += item.payment;
+            totalPrincipalPaidByYear += item.principalPaid;
+            totalInterestPaidByYear += item.interestPaid;
+            totalExtraPayPaidByYear += item.extraPayment;
+
+        })
+        let yearItem: IAmortizationScheduleItemByYear = {
+            id: yearIndex,
+            year: 0,
+            beginingBalance: beginingBalance,
+            endingBalance: endingBalance,
+            totalEmiPayMent: totalEmiPayMentByYear,
+            totalPrincipalPaid: totalPrincipalPaidByYear,
+            totalInterestPaid: totalInterestPaidByYear,
+            totalExtraPayment: totalExtraPayPaidByYear,
+            finacialYear: finacialYear,
+            monthHistory: amortizationScheduleItems
+        }
+        amortizationMetaData.amortizationScheduleItemsByYear.push(yearItem);
+
+        yearIndex++;
+
+    }
+
+    // calculate graph details
+    if (!amortizationMetaData?.graphDetails) {
+        amortizationMetaData.graphDetails = {
+            completedMonths: 0,
+            remainingMonths: 0,
+            interest: 0,
+            principal: 0
+        };
+    }
+
+    let totalMonths = 0;
+    let totalInterest = 0;
+    const emiPaidMonths: number = moment().diff(moment(amortizationMetaData.loanDetails.startDate), 'months');
+
+    amortizationMetaData.amortizationScheduleItemsByYear.forEach(yearItem => {
+        totalInterest += yearItem.totalInterestPaid;
+        totalMonths += yearItem.monthHistory.length
+    })
+    const remaining = (totalMonths - emiPaidMonths);
+    const completed = (amortizationMetaData.loanDetails.tenure * 12) - remaining;
+
+    amortizationMetaData.graphDetails = {
+        ...amortizationMetaData.graphDetails,
+        completedMonths: completed,
+        interest: totalInterest,
+        principal: amortizationMetaData.loanDetails.principal,
+        remainingMonths: remaining
+    }
+
+
+
+    return amortizationMetaData;
 }
 
 

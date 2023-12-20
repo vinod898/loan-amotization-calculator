@@ -67,7 +67,7 @@ const SignInSide: React.FC = () => {
     let user: User = Object.fromEntries(formData.entries()) as unknown as User;
     const fireBaseUser: User = await authService.signInUser(user);
     if (fireBaseUser.id) {
-      navigate(`/dashboard/${fireBaseUser.email}`);
+      navigate(`/dashboard/${fireBaseUser.id}`);
     }
   };
 
@@ -75,7 +75,7 @@ const SignInSide: React.FC = () => {
     try {
       const fireBaseUser: User = await authService.signInWithGoogle();
       if (fireBaseUser?.id) {
-        navigate(`/dashboard/${fireBaseUser.email}`);
+        navigate(`/dashboard/${fireBaseUser.id}`);
       }
       // Access user information from result.user
     } catch (error) {

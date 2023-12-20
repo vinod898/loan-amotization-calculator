@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { connect, useSelector } from 'react-redux';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -15,6 +14,7 @@ import { useParams } from "react-router-dom";
 import DrawerComponent from './Drawer';
 import HeaderComponent from './Header';
 import Summery from './summery';
+import { getAmortizationactualMetaData } from '../Services/amortizationService';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
 import { calcAmortizationScheduleItems } from '../utils/utils';
 
@@ -24,10 +24,36 @@ const defaultTheme = createTheme();
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [loanDetails, setLoanDetails] = React.useState({} as LoanDetails);
-  const [amortizationScheduleItems, setAmortizationScheduleItems] = React.useState([] as IAmortizationScheduleItemByYear[]);
-  const { param: profileName = "No Name" } = useParams();
+  // AmortizationMetaData
+  const [amortizationMetaData, setAmortizationMetaData] = React.useState<AmortizationMetaData | null>(null);
+  const { param: userId = "" } = useParams();
 
+  React.useEffect(() => {
+    // Define an async function to fetch forecast data
+    const fetchForecastData = async () => {
+      try {
+        // Fetch forecast data for the logged-in user (assuming user ID is available)
+        if (userId) {
+          const actualAmortizationDataList: AmortizationMetaData[] = await getAmortizationactualMetaData(userId);
+          if (actualAmortizationDataList.length > 0) {
+            const actualAmortizationData: AmortizationMetaData = actualAmortizationDataList[0];
+            // calcAmortizationScheduleItems
+            calcAmortizationScheduleItems(actualAmortizationData);;
+            // calculate graph details
+            setAmortizationMetaData(actualAmortizationData);
+
+          }
+
+        }
+      } catch (error) {
+        console.error('Error fetching forecast data:', error);
+        // Handle errors if needed (e.g., show an error message)
+      }
+    };
+
+    // Call the function to fetch forecast data when the component mounts
+    fetchForecastData();
+  }, []); // Empty dependency array to run the effect only once on mount
 
 
   const [open, setOpen] = React.useState(true);
@@ -57,7 +83,7 @@ const Dashboard: React.FC = () => {
           {...{
             open,
             toggleDrawer,
-            name: profileName,
+            name: "profileName",
             handleSaveClick,
             handleSignOut,
           }} />
@@ -78,24 +104,28 @@ const Dashboard: React.FC = () => {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
-              {/*  form input */}
-              <Grid item xs={9} md={9} lg={9}>
-                <FormInputs onSubmit={onSubmitCallBack} loanDetails={loanDetails} />
-              </Grid>
+              {amortizationMetaData?.loanDetails && (<Grid item xs={9} md={9} lg={9}>
+                <FormInputs onSubmit={onSubmitCallBack} amortizationMetaData={amortizationMetaData} />
+              </Grid>)}
 
-              {/* amortizationScheduleItems */}
-              {amortizationScheduleItems.length > 0 && (
-                <React.Fragment>
-                  <Grid item xs={3} md={3} lg={3}>
-                    <Summery data={amortizationScheduleItems} loanDetails={loanDetails} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <NestedTable
-                      data={amortizationScheduleItems}
-                      updateAmortizationItem={onUpdateCallBack} />
-                  </Grid>
-                </React.Fragment>
-              )}
+              {amortizationMetaData?.graphDetails &&
+                <Grid item xs={3} md={3} lg={3}>
+                  <Summery  amortizationMetaData={amortizationMetaData} />
+                </Grid>
+              }
+              {
+                amortizationMetaData?.amortizationScheduleItemsByYear?.length &&
+
+                <Grid item xs={12}>
+                  <NestedTable
+                    data={amortizationMetaData?.amortizationScheduleItemsByYear}
+                    updateAmortizationItem={onUpdateCallBack} />
+                </Grid>
+              }
+
+
+
+
             </Grid>
           </Container>
         </Box>

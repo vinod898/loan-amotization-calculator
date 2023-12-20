@@ -28,6 +28,13 @@ interface IAmortizationScheduleItem {
   interestRateMnth: number;
 }
 
+type GraphDetails = {
+  completedMonths : number;
+  remainingMonths : number;
+  interest: number;
+  principal: number;
+}
+
 
 type RootState  = {
   amortizationMetaData: AmortizationMetaData,
