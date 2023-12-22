@@ -1,36 +1,40 @@
 import * as React from 'react';
-import { IAmortizationScheduleItemByYear } from '../type';
-import Typography from '@mui/material/Typography';
+import { GraphDetails, IAmortizationScheduleItemByYear } from '../type';
 import Title from './Title';
 // import { LinearProgress, Paper, Tooltip } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label, LabelList } from 'recharts';
 import { Paper } from '@mui/material';
-import { LoanDetails } from '../Domain/FormField';
-import moment from 'moment';
 import PIGraph from './principalInterestgraph';
 import MonthProgressBar from './MonthProgressBar';
+import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { useState } from 'react';
 
 
 
 interface SummeryProps {
-    data: IAmortizationScheduleItemByYear[];
-    loanDetails: LoanDetails;
+    amortizationMetaData: AmortizationMetaData;
 }
 
 const Summary: React.FC<SummeryProps> = ({
-    data, loanDetails
+    amortizationMetaData
 }) => {
-    const emiPaidMonths: number = moment().diff(moment(loanDetails.startDate), 'months');
-    let months = 0;
-    let interest = 0;
-    data.forEach(((yearItem: IAmortizationScheduleItemByYear) => {
-        interest += yearItem.totalInterestPaid;
-        months += (yearItem.monthHistory.length)
-    }));
-    const remaining = (months - emiPaidMonths);
-    const completed = (loanDetails.tenure * 12) - remaining;
-    console.log({completed,remaining})
- 
+
+    const { completedMonths = 0, remainingMonths = 0, interest = 0, principal = 0 } = amortizationMetaData.graphDetails as GraphDetails;
+    const [completed_Months, setCompletedMonths] = useState(0);
+    const [remaining_Months, setRemainingMonths] = useState(0);
+    const [overAllInterest, setInterest] = useState(0);
+    const [overAllPrincipal, setPrincipal] = useState(0);
+
+    React.useEffect(() => {
+        if (amortizationMetaData?.graphDetails) {
+            const { completedMonths = 0, remainingMonths = 0, interest = 0, principal = 0 } = amortizationMetaData.graphDetails as GraphDetails;
+            setPrincipal(principal);
+            setCompletedMonths(completedMonths);
+            setRemainingMonths(remainingMonths);
+            setInterest(interest);
+        }
+
+    }, [completedMonths, remainingMonths, interest, principal]);
+
     return (
         <Paper
             sx={{
@@ -41,11 +45,12 @@ const Summary: React.FC<SummeryProps> = ({
             }}
         >
             <Title>Principal and Interest</Title>
-            <PIGraph principal={loanDetails.principal} interest={interest} ></PIGraph>
+            <PIGraph principal={overAllPrincipal} interest={overAllInterest} ></PIGraph>
             <Title>Tenure <small>in months</small> </Title>
-            <MonthProgressBar completed={completed} remaining={remaining}></MonthProgressBar>
+            <MonthProgressBar completed={completed_Months} remaining={remaining_Months}></MonthProgressBar>
         </Paper>
     );
 }
 
 export default Summary;
+

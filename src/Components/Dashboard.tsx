@@ -1,86 +1,77 @@
 import * as React from 'react';
-import { connect, useSelector } from 'react-redux';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import Deposits from './Deposits';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
-
-import {
-  getAmortizationItems,
-  getState,
-  saveState,
-  updateAmortizationItem,
-  updateLoadDetails,
-  resetAmortization
-} from '../store/actions';
-import { RootState } from '../store/store';
-import { showTableSelector } from '../store/AmortizationSelectors';
 import DrawerComponent from './Drawer';
 import HeaderComponent from './Header';
 import Summery from './summery';
+import { getAmortizationactualMetaData } from '../Services/amortizationService';
+import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { calcAmortizationScheduleItems } from '../utils/utils';
 
 
-
-interface DashboardProps {
-  getAmortizationItems: () => void;
-  updateLoadDetails: (loanDet: LoanDetails) => void;
-  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
-  saveState: (user: string) => void;
-  getState: (user: string) => void;
-  resetAmortization: () => void;
-}
-// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-const Dashboard: React.FC<DashboardProps> = ({
-  getAmortizationItems,
-  updateLoadDetails,
-  updateAmortizationItem,
-  saveState,
-  getState,
-  resetAmortization
-  // ... (rest of the props)
-}) => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const { param: profileName = "No Name" } = useParams();
+  // AmortizationMetaData
+  const [amortizationMetaData, setAmortizationMetaData] = React.useState<AmortizationMetaData | null>(null);
+  const { param: userId = "" } = useParams();
 
   React.useEffect(() => {
-    getState(profileName);
-  }, []); // Empty dependency array to run only on mount
+    // Define an async function to fetch forecast data
+    const fetchForecastData = async () => {
+      try {
+        // Fetch forecast data for the logged-in user (assuming user ID is available)
+        if (userId) {
+          const actualAmortizationDataList: AmortizationMetaData[] = await getAmortizationactualMetaData(userId);
+          if (actualAmortizationDataList.length > 0) {
+            const actualAmortizationData: AmortizationMetaData = actualAmortizationDataList[0];
+            // calcAmortizationScheduleItems
+            calcAmortizationScheduleItems(actualAmortizationData);;
+            // calculate graph details
+            setAmortizationMetaData(actualAmortizationData);
+
+          }
+
+        }
+      } catch (error) {
+        console.error('Error fetching forecast data:', error);
+        // Handle errors if needed (e.g., show an error message)
+      }
+    };
+
+    // Call the function to fetch forecast data when the component mounts
+    fetchForecastData();
+  }, []); // Empty dependency array to run the effect only once on mount
 
 
-
-  const showTable = useSelector(showTableSelector);
-  const amortizationScheduleItems = useSelector(
-    (state: RootState) => state.amortization.amortizationScheduleItems
-  );
-  const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.loanDet);
-  
   const [open, setOpen] = React.useState(true);
 
 
   const onSubmitCallBack = (loanDet: LoanDetails) => {
-    updateLoadDetails(loanDet);
-    getAmortizationItems();
+    // updateLoadDetails(loanDet);
+    // getAmortizationItems();
   };
   const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
-    updateAmortizationItem(updatedItem);
-    getAmortizationItems();
+
+    // updateAmortizationItem(updatedItem);
+    // getAmortizationItems();
   };
   const toggleDrawer = () => setOpen(!open);
-  const handleSaveClick = () => saveState(profileName);
+  const handleSaveClick = () => { } //saveState(profileName);
   const handleSignOut = () => {
-    resetAmortization();
+    //  resetAmortization();
     navigate('/');
   };
 
@@ -91,13 +82,11 @@ const Dashboard: React.FC<DashboardProps> = ({
         <HeaderComponent
           {...{
             open,
-            showTable,
             toggleDrawer,
-            name: profileName,
+            name: "profileName",
             handleSaveClick,
             handleSignOut,
-          }}
-        />
+          }} />
 
         <DrawerComponent open={open} toggleDrawer={toggleDrawer}></DrawerComponent>
         <Box
@@ -115,24 +104,28 @@ const Dashboard: React.FC<DashboardProps> = ({
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
-              {/*  form input */}
-              <Grid item xs={9} md={9} lg={9}>
-                <FormInputs onSubmit={onSubmitCallBack} loanDetails={initialLoanDet} />
-              </Grid>
+              {amortizationMetaData?.loanDetails && (<Grid item xs={9} md={9} lg={9}>
+                <FormInputs onSubmit={onSubmitCallBack} amortizationMetaData={amortizationMetaData} />
+              </Grid>)}
 
-              {/* amortizationScheduleItems */}
-              {showTable && (
-                <React.Fragment>
-                  <Grid item xs={3} md={3} lg={3}>
-                    <Summery data={amortizationScheduleItems} loanDetails={initialLoanDet} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <NestedTable
-                      data={amortizationScheduleItems}
-                      updateAmortizationItem={onUpdateCallBack} />
-                  </Grid>
-                </React.Fragment>
-              )}
+              {amortizationMetaData?.graphDetails &&
+                <Grid item xs={3} md={3} lg={3}>
+                  <Summery  amortizationMetaData={amortizationMetaData} />
+                </Grid>
+              }
+              {
+                amortizationMetaData?.amortizationScheduleItemsByYear?.length &&
+
+                <Grid item xs={12}>
+                  <NestedTable
+                    data={amortizationMetaData?.amortizationScheduleItemsByYear}
+                    updateAmortizationItem={onUpdateCallBack} />
+                </Grid>
+              }
+
+
+
+
             </Grid>
           </Container>
         </Box>
@@ -140,16 +133,5 @@ const Dashboard: React.FC<DashboardProps> = ({
     </ThemeProvider>
   );
 }
-const mapStateToProps = (state: RootState) => ({
-  amortizationScheduleItems: state.amortization.amortizationScheduleItems,
-  showTable: showTableSelector(state),
-});
 
-export default connect(mapStateToProps, {
-  getAmortizationItems,
-  updateLoadDetails,
-  updateAmortizationItem,
-  saveState,
-  getState,
-  resetAmortization
-})(Dashboard);
+export default Dashboard;

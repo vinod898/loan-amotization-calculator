@@ -61,7 +61,7 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
               </TableHead>
               <TableBody>
                 {row.monthHistory.map((historyRow: IAmortizationScheduleItem) => (
-                  <TableRow key={historyRow.month}>
+                  <TableRow key={`${row.id} - ${row.finacialYear} - ${historyRow.month}`}>
                     <TableCell component="th" scope="row">
                       {historyRow.month}
                     </TableCell>
@@ -136,7 +136,7 @@ const NestedTable: React.FC<NestedTableProps> = ({ data, updateAmortizationItem 
           </TableHead>
           <TableBody>
             {data.map((row: IAmortizationScheduleItemByYear) => (
-              <Row key={row.year} row={row} edit={handleEdit} />
+              <Row  key={`${row.id} - ${row.finacialYear}`} row={row} edit={handleEdit} />
             ))}
           </TableBody>
         </Table>

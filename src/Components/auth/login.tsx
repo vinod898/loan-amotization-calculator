@@ -14,10 +14,10 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { makeStyles } from "@mui/styles";
 import { Theme } from "@mui/material";
-import { auth } from "../../Config/firebase-config"
-import { UserCredential, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import * as authService from "../../Services/authService";
 import { User } from "../../Domain/user";
+
+
 
 const MadeWithLove = () => (
   <Typography variant="body2" color="textSecondary" align="center">
@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-const SignInSide = () => {
+const SignInSide: React.FC = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -67,10 +67,21 @@ const SignInSide = () => {
     let user: User = Object.fromEntries(formData.entries()) as unknown as User;
     const fireBaseUser: User = await authService.signInUser(user);
     if (fireBaseUser.id) {
-      navigate(`/dashboard/${fireBaseUser.email}`);
+      navigate(`/dashboard/${fireBaseUser.id}`);
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const fireBaseUser: User = await authService.signInWithGoogle();
+      if (fireBaseUser?.id) {
+        navigate(`/dashboard/${fireBaseUser.id}`);
+      }
+      // Access user information from result.user
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
@@ -119,6 +130,9 @@ const SignInSide = () => {
             >
               Sign In
             </Button>
+            <Button onClick={signInWithGoogle}>Sign in with Google</Button>
+
+
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
@@ -140,5 +154,7 @@ const SignInSide = () => {
     </Grid>
   );
 };
+
+
 
 export default SignInSide;
