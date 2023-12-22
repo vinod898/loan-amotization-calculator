@@ -14,7 +14,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
   <ThemeProvider theme={theme}>
-      <Router basename='/loan-amotization-calculator'>
+      <Router basename='/'>
         <AppRoutes />
       </Router>
     </ThemeProvider>
