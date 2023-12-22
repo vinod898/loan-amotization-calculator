@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
+import { IAmortizationScheduleItem } from '../type';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
 import DrawerComponent from './Drawer';

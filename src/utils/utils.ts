@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, GraphDetails } from '../type';
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
 export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): AmortizationMetaData => {
 
@@ -153,59 +153,8 @@ const calculateEmi = (interestRate: number, loanPeriod: number, loanAmount: numb
         loanAmount * roi * (rateVariable / (rateVariable - 1))
     );
 }
-// eslint-disable-next-line
-const AMOUNT_FORMAT = new Intl.NumberFormat("en-IN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-});
-// eslint-disable-next-line
-const INTERESTRATE_FORMAT = new Intl.NumberFormat("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-});
 
 
-const reArrangeSchedule = (
-    item: IAmortizationScheduleItem,
-    amortizationScheduleItemsByYear: IAmortizationScheduleItemByYear[]
-) => {
-    const {
-        beginingBalance,
-        endingBalance,
-        extraPayment,
-        principalPaid,
-        payment,
-        currentDate,
-        interestPaid
-    } = item;
-    const currentYear = currentDate.get('M') < 3 ? currentDate.get('year') - 1 : currentDate.get('year');
-    const finacialYear = `${currentYear} - ${currentYear + 1}`
-    const index = amortizationScheduleItemsByYear.findIndex(item => item.year === currentYear);
-    let yearItem: IAmortizationScheduleItemByYear = {} as IAmortizationScheduleItemByYear;
 
-    if (index > -1) {
-        // get month hiostory list
-        yearItem = amortizationScheduleItemsByYear[index];
-        // aggregate year values
-        yearItem.endingBalance = endingBalance;
-        yearItem.totalEmiPayMent += payment;
-        yearItem.totalExtraPayment += extraPayment
-        yearItem.totalPrincipalPaid += principalPaid;
-        yearItem.totalInterestPaid += interestPaid;
-        yearItem.finacialYear = finacialYear;
-        yearItem.monthHistory.push(item);
-    } else {
-        yearItem.year = currentYear;
-        yearItem.endingBalance = endingBalance;
-        yearItem.beginingBalance = beginingBalance;
-        yearItem.totalEmiPayMent = payment;
-        yearItem.totalExtraPayment = extraPayment;
-        yearItem.totalPrincipalPaid = principalPaid;
-        yearItem.totalInterestPaid = interestPaid;
-        yearItem.finacialYear = finacialYear;
-        yearItem.monthHistory = [item];
-        amortizationScheduleItemsByYear.push(yearItem)
-    }
-}
 
 
