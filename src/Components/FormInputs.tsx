@@ -1,14 +1,15 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import { Button, Paper, TextField } from '@mui/material';
-import { LoanDetails } from '../Domain/FormField';
-import { ChangeEvent, useState } from 'react';
+import { FormField, LoanDetails } from '../Domain/FormField';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
 
 
 
 interface TitleProps {
-    onSubmit: (loanDetails: LoanDetails) => void;
+    onSubmit: () => void;
     amortizationMetaData: AmortizationMetaData;
 }
 
@@ -23,6 +24,8 @@ export default function FormInputs({ amortizationMetaData, onSubmit }: TitleProp
     const [startDate, setStartDate] = useState(new Date());
     const [initialLoanDetails, setInitialLoanDetails] = useState(amortizationMetaData.loanDetails);
 
+    // const initialLoanDet: LoanDetails = useSelector((state: RootState) => state.amortization.amortizationMetaData.loanDetails);
+    // 
 
     React.useEffect(() => {
         if (amortizationMetaData?.loanDetails) {
@@ -32,7 +35,7 @@ export default function FormInputs({ amortizationMetaData, onSubmit }: TitleProp
             setInterestRate(interestRate);
             setTenure(tenure);
             setStartDate(startDate ? new Date(startDate) : new Date());
-            onSubmit(amortizationMetaData.loanDetails);
+            onSubmit();
         }
 
     }, [initialLoanDetails]);
@@ -45,8 +48,8 @@ export default function FormInputs({ amortizationMetaData, onSubmit }: TitleProp
         const tenure = Number(formData.get("tenure"));
         const date = formData.get("startDate") as string;
         const startDate = new Date(date);
-        const loanDet1 = { ...amortizationMetaData.loanDetails, principal, interestRate, tenure, startDate };
-        onSubmit(loanDet1);
+        amortizationMetaData.loanDetails= { ...amortizationMetaData.loanDetails, principal, interestRate, tenure, startDate };
+        onSubmit();
 
     };
 

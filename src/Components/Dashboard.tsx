@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import FormInputs from './FormInputs';
 import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
 import DrawerComponent from './Drawer';
@@ -16,7 +16,7 @@ import HeaderComponent from './Header';
 import Summery from './summery';
 import { getAmortizationactualMetaData } from '../Services/amortizationService';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
-import { calcAmortizationScheduleItems } from '../utils/utils';
+import { calcAmortizationScheduleItems, getFinancialYear } from '../utils/utils';
 
 
 const defaultTheme = createTheme();
@@ -24,8 +24,10 @@ const defaultTheme = createTheme();
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  // AmortizationMetaData
+  // AmortizationMetaData amortizationMetaData?.amortizationScheduleItemsByYear
   const [amortizationMetaData, setAmortizationMetaData] = React.useState<AmortizationMetaData | null>(null);
+  const [amortizationScheduleItemsByYear, setAmortizationScheduleItemsByYear] = React.useState<IAmortizationScheduleItemByYear[]>([]);
+
   const { param: userId = "" } = useParams();
 
   React.useEffect(() => {
@@ -39,8 +41,9 @@ const Dashboard: React.FC = () => {
             const actualAmortizationData: AmortizationMetaData = actualAmortizationDataList[0];
             // calcAmortizationScheduleItems
             calcAmortizationScheduleItems(actualAmortizationData);;
-            // calculate graph details
             setAmortizationMetaData(actualAmortizationData);
+            if (actualAmortizationData?.amortizationScheduleItemsByYear && actualAmortizationData?.amortizationScheduleItemsByYear.length > -1)
+              setAmortizationScheduleItemsByYear(actualAmortizationData.amortizationScheduleItemsByYear)
 
           }
 
@@ -59,14 +62,61 @@ const Dashboard: React.FC = () => {
   const [open, setOpen] = React.useState(true);
 
 
-  const onSubmitCallBack = (loanDet: LoanDetails) => {
-    // updateLoadDetails(loanDet);
-    // getAmortizationItems();
-  };
-  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
+  const onSubmitCallBack = () => {
+    if (amortizationMetaData?.loanDetails) {
+      // calcAmortizationScheduleItems
+      calcAmortizationScheduleItems(amortizationMetaData);;
+      // calculate graph details
+      setAmortizationMetaData(amortizationMetaData);
 
-    // updateAmortizationItem(updatedItem);
-    // getAmortizationItems();
+      if (amortizationMetaData?.amortizationScheduleItemsByYear && amortizationMetaData?.amortizationScheduleItemsByYear.length > -1)
+        setAmortizationScheduleItemsByYear(amortizationMetaData.amortizationScheduleItemsByYear)
+    }
+
+  };
+
+  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
+    if (amortizationMetaData) {
+
+      if (!amortizationMetaData.emiMap) amortizationMetaData.emiMap = new Map<number, number>();
+      if (!amortizationMetaData.interestMap) amortizationMetaData.interestMap = new Map<number, number>();
+      if (!amortizationMetaData.extraPaymentMap) amortizationMetaData.extraPaymentMap = new Map<number, number>();
+
+
+      amortizationMetaData.emiMap.set(updatedItem.id, updatedItem.payment);
+      amortizationMetaData.interestMap.set(updatedItem.id, updatedItem.interestRateMnth);
+      amortizationMetaData.extraPaymentMap.set(updatedItem.id, updatedItem.extraPayment);
+
+      // calcAmortizationScheduleItems
+      calcAmortizationScheduleItems(amortizationMetaData);;
+      // calculate graph details
+      setAmortizationMetaData(amortizationMetaData);
+
+      if (amortizationMetaData?.amortizationScheduleItemsByYear && amortizationMetaData?.amortizationScheduleItemsByYear.length > -1)
+        setAmortizationScheduleItemsByYear(amortizationMetaData.amortizationScheduleItemsByYear)
+
+    }
+
+
+
+
+    // const fnYear = getFinancialYear(updatedItem.currentDate);
+
+    // const foundYear = amortizationMetaData?.amortizationScheduleItemsByYear?.find(
+    //   (yearItem) => fnYear === yearItem.finacialYear
+    // );
+
+    // if (foundYear) {
+    //   const foundMonthIndex = foundYear.monthHistory.findIndex(
+    //     (monthItem) => monthItem.id === updatedItem.id
+    //   );
+
+    //   if (foundMonthIndex !== -1) {
+    //     foundYear.monthHistory[foundMonthIndex] = { ...updatedItem };
+    //   }
+    // }
+
+    console.log(updatedItem);
   };
   const toggleDrawer = () => setOpen(!open);
   const handleSaveClick = () => { } //saveState(profileName);
@@ -110,15 +160,15 @@ const Dashboard: React.FC = () => {
 
               {amortizationMetaData?.graphDetails &&
                 <Grid item xs={3} md={3} lg={3}>
-                  <Summery  amortizationMetaData={amortizationMetaData} />
+                  <Summery amortizationMetaData={amortizationMetaData} />
                 </Grid>
               }
               {
-                amortizationMetaData?.amortizationScheduleItemsByYear?.length &&
+                amortizationScheduleItemsByYear?.length &&
 
                 <Grid item xs={12}>
                   <NestedTable
-                    data={amortizationMetaData?.amortizationScheduleItemsByYear}
+                    data={amortizationScheduleItemsByYear}
                     updateAmortizationItem={onUpdateCallBack} />
                 </Grid>
               }

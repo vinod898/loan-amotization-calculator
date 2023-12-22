@@ -1,11 +1,13 @@
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
 export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): AmortizationMetaData => {
 
+    // empty the list   i.e., amortizationMetaData.amortizationScheduleItemsByYear = []
+    amortizationMetaData.amortizationScheduleItemsByYear = []
+
     const { emiMap, extraPaymentMap, interestMap, loanDetails: { interestRate, principal, startDate, tenure } } = amortizationMetaData;
     let initialEmi = calculateEmi(interestRate, tenure, principal)
-    let currentDate = moment(startDate);
     let endingBalance: number = principal;
     const amortizationScheduleItemsByYearMap: Map<string, IAmortizationScheduleItem[]> = new Map();
 
@@ -13,7 +15,8 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
         let extraPaymentForThisInstallment: number = extraPaymentMap?.get(index) ?? 0;
         let interestRateMnth: number = interestMap?.get(index) ?? interestRate;
         let emi: number = emiMap?.get(index) ?? initialEmi;
-        const month: string = currentDate.add(1, 'M').format('MMM-YYYY');
+        const currentEmiDate = moment(startDate).add(index, 'M');
+        const month: string = currentEmiDate.format('MMM-YYYY');
         const beginingBalance: number = endingBalance;
         // calculate roi  
         const roi = interestRateMnth / 12 / 100;
@@ -41,7 +44,7 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
         const item: IAmortizationScheduleItem = {
             id: index,
             month: month,
-            currentDate: currentDate,
+            currentDate: currentEmiDate,
             beginingBalance: Math.round(beginingBalance),
             endingBalance: Math.round(endingBalance),
             payment: Math.round(emi),
@@ -50,22 +53,21 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
             extraPayment: Math.round(extraPaymentForThisInstallment),
             interestRateMnth: interestRateMnth
         }
-        const currentYear = currentDate.get('M') < 3 ? currentDate.get('year') - 1 : currentDate.get('year');
-        const finacialYear = `${currentYear} - ${currentYear + 1}`;
+       
+        const fnYear = getFinancialYear(currentEmiDate);
 
 
-        if (!amortizationScheduleItemsByYearMap.has(finacialYear)) {
-            amortizationScheduleItemsByYearMap.set(finacialYear, []);
+        if (!amortizationScheduleItemsByYearMap.has(fnYear)) {
+            amortizationScheduleItemsByYearMap.set(fnYear, []);
         }
-        const amortizationScheduleItems: IAmortizationScheduleItem[] = amortizationScheduleItemsByYearMap.get(finacialYear) || [];
+        const amortizationScheduleItems: IAmortizationScheduleItem[] = amortizationScheduleItemsByYearMap.get(fnYear) || [];
         amortizationScheduleItems.push(item);
-        amortizationScheduleItemsByYearMap.set(finacialYear, amortizationScheduleItems);
+        amortizationScheduleItemsByYearMap.set(fnYear, amortizationScheduleItems);
         // reArrangeSchedule(item, amortizationMetaData)
     }
     let yearIndex = 1;
     /// calculate yearly aggregations
     if (!amortizationMetaData?.amortizationScheduleItemsByYear) {
-        amortizationMetaData.amortizationScheduleItemsByYear = []
     }
     for (const [finacialYear, amortizationScheduleItems] of amortizationScheduleItemsByYearMap) {
 
@@ -92,7 +94,6 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
         })
         let yearItem: IAmortizationScheduleItemByYear = {
             id: yearIndex,
-            year: 0,
             beginingBalance: beginingBalance,
             endingBalance: endingBalance,
             totalEmiPayMent: totalEmiPayMentByYear,
@@ -142,7 +143,12 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
     return amortizationMetaData;
 }
 
-
+export const getFinancialYear = (currentEmiDate: Moment): string => {
+    const currentYear = currentEmiDate.month() < 3 ? currentEmiDate.year() - 1 : currentEmiDate.year();
+    const nextYear = currentYear + 1;
+    return `${currentYear}-${nextYear}`;
+  };
+  
 
 
 const calculateEmi = (interestRate: number, loanPeriod: number, loanAmount: number) => {
