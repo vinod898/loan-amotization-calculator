@@ -1,9 +1,8 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import { Button, Paper, TextField } from '@mui/material';
-import { FormField, LoanDetails } from '../Domain/FormField';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { LoanDetails } from '../Domain/FormField';
+import { ChangeEvent, useState } from 'react';
 import { AmortizationMetaData } from '../Domain/AmortizationData';
 
 

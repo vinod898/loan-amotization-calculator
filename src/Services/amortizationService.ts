@@ -8,13 +8,14 @@ export const getAmartizationData = async (dbQuery: Query<DocumentData, DocumentD
     let amartizationDataList: AmortizationMetaData[] = [] as AmortizationMetaData[];
     try {
         const data = await getDocs(dbQuery);
-        data.docs
+        amartizationDataList =  data.docs
             .map(doc => {
                 const { userId, type, loanDetails, interestMap, emiMap, extraPaymentMap } = doc.data();
                 const amartizationData: AmortizationMetaData = {
                     emiMap, extraPaymentMap, id: doc.id, interestMap, loanDetails, type, userId,
                 }
-                amartizationDataList.push(amartizationData);
+               // amartizationDataList.push(amartizationData);
+               return amartizationData;
             });
     } catch (error) {
         console.log(error)
