@@ -87,10 +87,8 @@ const toMap = (json: { [key: number]: number }): Map<number, number> => {
     const myMap = new Map<number, number>();
     Object.entries(json).forEach(([key, value]) => {
         const numericKey: number = parseInt(key, 10); // Convert key to a number if needed
-        console.log(`Key: ${numericKey}, Value: ${value}`);
         myMap.set(numericKey,value);
     });
-    console.log(json)
     return myMap;
 
 }

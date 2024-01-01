@@ -74,7 +74,6 @@ const Dashboard: React.FC = () => {
   };
 
   const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem, changeParameter: string) => {
-    console.log(changeParameter)
 
     if (changeParameter && enrichedAmortizationMetaData) {
       const { amortizationScheduleItemsByYear, graphDetails, ...actualAmortizationData } = enrichedAmortizationMetaData;
@@ -108,7 +107,7 @@ const Dashboard: React.FC = () => {
         setAmortizationScheduleItemsByYear(updatedMetaData.amortizationScheduleItemsByYear)
 
     }
-    console.log(updatedItem);
+    
   };
 
   const toggleDrawer = () => setOpen(!open);
@@ -116,7 +115,6 @@ const Dashboard: React.FC = () => {
   const handleSaveClick = async () => {
     if (enrichedAmortizationMetaData) {
       const { amortizationScheduleItemsByYear, graphDetails, ...actualAmortizationData } = enrichedAmortizationMetaData;
-      console.log('save', actualAmortizationData);
       await upsertAmortizationData(actualAmortizationData)
     }
   }
