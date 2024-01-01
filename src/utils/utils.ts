@@ -1,10 +1,13 @@
 import moment, { Moment } from 'moment';
-import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem } from '../type';
-import { AmortizationMetaData } from '../Domain/AmortizationData';
-export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): AmortizationMetaData => {
+import { IAmortizationScheduleItemByYear, IAmortizationScheduleItem, GraphDetails } from '../type';
+import { AmortizationMetaData, EnrichedMetaData } from '../Domain/AmortizationData';
+export const calcAmortizationScheduleItems = (amortizationMetaData: AmortizationMetaData): EnrichedMetaData => {
 
-    // empty the list   i.e., amortizationMetaData.amortizationScheduleItemsByYear = []
-    amortizationMetaData.amortizationScheduleItemsByYear = []
+    const enrichedMetaData: EnrichedMetaData = {
+        ...amortizationMetaData,
+        amortizationScheduleItemsByYear: [] as IAmortizationScheduleItemByYear[],
+        graphDetails: {} as GraphDetails
+    };
 
     const { emiMap, extraPaymentMap, interestMap, loanDetails: { interestRate, principal, startDate, tenure } } = amortizationMetaData;
     let initialEmi = calculateEmi(interestRate, tenure, principal)
@@ -12,9 +15,12 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
     const amortizationScheduleItemsByYearMap: Map<string, IAmortizationScheduleItem[]> = new Map();
 
     for (let index = 1; endingBalance > 0; index++) {
-        let extraPaymentForThisInstallment: number = extraPaymentMap?.get(index) ?? 0;
-        let interestRateMnth: number = interestMap?.get(index) ?? interestRate;
-        let emi: number = emiMap?.get(index) ?? initialEmi;
+        let extraPaymentForThisInstallment: number = extraPaymentMap instanceof Map ? extraPaymentMap.get(index) ?? 0 : 0;
+        if (emiMap instanceof Map && index > 1 && !(emiMap.get(index))) emiMap.set(index, emiMap.get(index - 1) ?? initialEmi);
+        if (interestMap instanceof Map && index > 1 && !(interestMap.get(index))) interestMap.set(index, interestMap.get(index - 1) ?? interestRate);
+        let emi: number = emiMap.get(index) ?? initialEmi;
+        let interestRateMnth: number = interestMap.get(index) ?? interestRate;
+
         const currentEmiDate = moment(startDate).add(index, 'M');
         const month: string = currentEmiDate.format('MMM-YYYY');
         const beginingBalance: number = endingBalance;
@@ -31,6 +37,8 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
         if (principleAmount < 0) {
             // adjust emi
             emi = calculateEmi(interestRateMnth, tenure, principal);
+            emiMap.set(index, emi);
+            emiMap.delete(index + 1);
             principleAmount = emi - interestAmount;
         }
         endingBalance = beginingBalance - (principleAmount + extraPaymentForThisInstallment);
@@ -53,7 +61,7 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
             extraPayment: Math.round(extraPaymentForThisInstallment),
             interestRateMnth: interestRateMnth
         }
-       
+
         const fnYear = getFinancialYear(currentEmiDate);
 
 
@@ -67,8 +75,8 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
     }
     let yearIndex = 1;
     /// calculate yearly aggregations
-    if (!amortizationMetaData?.amortizationScheduleItemsByYear) {
-    }
+    if (!enrichedMetaData?.amortizationScheduleItemsByYear) enrichedMetaData.amortizationScheduleItemsByYear = [];
+
     for (const [finacialYear, amortizationScheduleItems] of amortizationScheduleItemsByYearMap) {
 
         let beginingBalance = 0;
@@ -103,15 +111,14 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
             finacialYear: finacialYear,
             monthHistory: amortizationScheduleItems
         }
-        amortizationMetaData.amortizationScheduleItemsByYear.push(yearItem);
-
+        enrichedMetaData.amortizationScheduleItemsByYear.push(yearItem);
         yearIndex++;
 
     }
 
     // calculate graph details
-    if (!amortizationMetaData?.graphDetails) {
-        amortizationMetaData.graphDetails = {
+    if (!enrichedMetaData?.graphDetails) {
+        enrichedMetaData.graphDetails = {
             completedMonths: 0,
             remainingMonths: 0,
             interest: 0,
@@ -123,32 +130,32 @@ export const calcAmortizationScheduleItems = (amortizationMetaData: Amortization
     let totalInterest = 0;
     const emiPaidMonths: number = moment().diff(moment(amortizationMetaData.loanDetails.startDate), 'months');
 
-    amortizationMetaData.amortizationScheduleItemsByYear.forEach(yearItem => {
+    enrichedMetaData.amortizationScheduleItemsByYear.forEach(yearItem => {
         totalInterest += yearItem.totalInterestPaid;
         totalMonths += yearItem.monthHistory.length
     })
     const remaining = (totalMonths - emiPaidMonths);
     const completed = (amortizationMetaData.loanDetails.tenure * 12) - remaining;
 
-    amortizationMetaData.graphDetails = {
-        ...amortizationMetaData.graphDetails,
+    enrichedMetaData.graphDetails = {
+        ...enrichedMetaData.graphDetails,
         completedMonths: completed,
         interest: totalInterest,
-        principal: amortizationMetaData.loanDetails.principal,
+        principal: enrichedMetaData.loanDetails.principal,
         remainingMonths: remaining
     }
 
 
 
-    return amortizationMetaData;
+    return enrichedMetaData;
 }
 
 export const getFinancialYear = (currentEmiDate: Moment): string => {
     const currentYear = currentEmiDate.month() < 3 ? currentEmiDate.year() - 1 : currentEmiDate.year();
     const nextYear = currentYear + 1;
     return `${currentYear}-${nextYear}`;
-  };
-  
+};
+
 
 
 const calculateEmi = (interestRate: number, loanPeriod: number, loanAmount: number) => {
