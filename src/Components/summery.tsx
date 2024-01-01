@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { GraphDetails, IAmortizationScheduleItemByYear } from '../type';
+import { GraphDetails } from '../type';
 import Title from './Title';
 // import { LinearProgress, Paper, Tooltip } from '@mui/material';
 import { Paper } from '@mui/material';
 import PIGraph from './principalInterestgraph';
 import MonthProgressBar from './MonthProgressBar';
-import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { EnrichedMetaData } from '../Domain/AmortizationData';
 import { useState } from 'react';
 
 
 
 interface SummeryProps {
-    amortizationMetaData: AmortizationMetaData;
+    amortizationMetaData: EnrichedMetaData;
 }
 
 const Summary: React.FC<SummeryProps> = ({

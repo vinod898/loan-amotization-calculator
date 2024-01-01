@@ -9,7 +9,11 @@ export interface AmortizationMetaData {
     interestMap: Map<number, number>,
     emiMap: Map<number, number>,
     extraPaymentMap: Map<number, number>,
-    amortizationScheduleItemsByYear ?:IAmortizationScheduleItemByYear[],
+}
+
+export interface EnrichedMetaData extends AmortizationMetaData {
+
+    amortizationScheduleItemsByYear ?: IAmortizationScheduleItemByYear[],
     graphDetails ?: GraphDetails,
 
 }

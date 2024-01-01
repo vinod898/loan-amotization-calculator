@@ -4,7 +4,6 @@ import { AmortizationMetaData } from "./Domain/AmortizationData";
 
 interface IAmortizationScheduleItemByYear {
   id: number;
-  year: number;
   beginingBalance: number;
   endingBalance: number;
   totalEmiPayMent: number;

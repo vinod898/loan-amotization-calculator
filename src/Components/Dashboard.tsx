@@ -6,16 +6,15 @@ import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import FormInputs from './FormInputs';
-import { LoanDetails } from '../Domain/FormField';
 import NestedTable from './nestedTable'; // Update the import path as needed
-import { IAmortizationScheduleItem } from '../type';
+import { IAmortizationScheduleItem, IAmortizationScheduleItemByYear } from '../type';
 import { useNavigate } from 'react-router-dom';
 import { useParams } from "react-router-dom";
 import DrawerComponent from './Drawer';
 import HeaderComponent from './Header';
 import Summery from './summery';
-import { getAmortizationactualMetaData } from '../Services/amortizationService';
-import { AmortizationMetaData } from '../Domain/AmortizationData';
+import { getAmortizationactualMetaData, upsertAmortizationData } from '../Services/amortizationService';
+import { AmortizationMetaData, EnrichedMetaData } from '../Domain/AmortizationData';
 import { calcAmortizationScheduleItems } from '../utils/utils';
 
 
@@ -23,9 +22,9 @@ const defaultTheme = createTheme();
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [enrichedAmortizationMetaData, setEnrichedAmortizationMetaData] = React.useState<EnrichedMetaData | null>(null);
+  const [amortizationScheduleItemsByYear, setAmortizationScheduleItemsByYear] = React.useState<IAmortizationScheduleItemByYear[]>([]);
 
-  // AmortizationMetaData
-  const [amortizationMetaData, setAmortizationMetaData] = React.useState<AmortizationMetaData | null>(null);
   const { param: userId = "" } = useParams();
 
   React.useEffect(() => {
@@ -38,9 +37,11 @@ const Dashboard: React.FC = () => {
           if (actualAmortizationDataList.length > 0) {
             const actualAmortizationData: AmortizationMetaData = actualAmortizationDataList[0];
             // calcAmortizationScheduleItems
-            calcAmortizationScheduleItems(actualAmortizationData);;
-            // calculate graph details
-            setAmortizationMetaData(actualAmortizationData);
+            const enrichedMetaData: EnrichedMetaData = calcAmortizationScheduleItems(actualAmortizationData);;
+            setEnrichedAmortizationMetaData(enrichedMetaData);
+            const hasAmortizationScheduleItems = enrichedMetaData?.amortizationScheduleItemsByYear?.length ?? 0 > 0;
+            if (hasAmortizationScheduleItems)
+              setAmortizationScheduleItemsByYear(enrichedMetaData.amortizationScheduleItemsByYear ?? [])
 
           }
 
@@ -59,17 +60,67 @@ const Dashboard: React.FC = () => {
   const [open, setOpen] = React.useState(true);
 
 
-  const onSubmitCallBack = (loanDet: LoanDetails) => {
-    // updateLoadDetails(loanDet);
-    // getAmortizationItems();
-  };
-  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem) => {
+  const onSubmitCallBack = () => {
+    if (enrichedAmortizationMetaData?.loanDetails) {
+      // calcAmortizationScheduleItems
+      calcAmortizationScheduleItems(enrichedAmortizationMetaData);;
+      // calculate graph details
+      setEnrichedAmortizationMetaData(enrichedAmortizationMetaData);
 
-    // updateAmortizationItem(updatedItem);
-    // getAmortizationItems();
+      if (enrichedAmortizationMetaData?.amortizationScheduleItemsByYear && enrichedAmortizationMetaData?.amortizationScheduleItemsByYear.length > -1)
+        setAmortizationScheduleItemsByYear(enrichedAmortizationMetaData.amortizationScheduleItemsByYear)
+    }
+
   };
+
+  const onUpdateCallBack = (updatedItem: IAmortizationScheduleItem, changeParameter: string) => {
+    console.log(changeParameter)
+
+    if (changeParameter && enrichedAmortizationMetaData) {
+      const { amortizationScheduleItemsByYear, graphDetails, ...actualAmortizationData } = enrichedAmortizationMetaData;
+      const maxMonths = amortizationScheduleItemsByYear?.reduce((total, yearItem) => {
+        return total + yearItem.monthHistory.length
+      }, 0) ?? 0;
+      switch (changeParameter) {
+        case 'interestRate':
+          for (let i = updatedItem.id; i <= maxMonths; i++)
+            enrichedAmortizationMetaData.interestMap.set(i, updatedItem.interestRateMnth);
+          break;
+        case 'emiPayment':
+          for (let i = updatedItem.id; i <= maxMonths; i++)
+            enrichedAmortizationMetaData.emiMap.set(i, updatedItem.payment);
+          break;
+        case 'extraPayment':
+          enrichedAmortizationMetaData.extraPaymentMap.set(updatedItem.id, updatedItem.extraPayment);
+          break;
+
+        default:
+          break;
+      }
+
+
+      // calcAmortizationScheduleItems
+      const updatedMetaData: EnrichedMetaData = calcAmortizationScheduleItems(actualAmortizationData);;
+      // calculate graph details
+      setEnrichedAmortizationMetaData(updatedMetaData);
+
+      if (updatedMetaData?.amortizationScheduleItemsByYear && updatedMetaData?.amortizationScheduleItemsByYear.length > -1)
+        setAmortizationScheduleItemsByYear(updatedMetaData.amortizationScheduleItemsByYear)
+
+    }
+    console.log(updatedItem);
+  };
+
   const toggleDrawer = () => setOpen(!open);
-  const handleSaveClick = () => { } //saveState(profileName);
+
+  const handleSaveClick = async () => {
+    if (enrichedAmortizationMetaData) {
+      const { amortizationScheduleItemsByYear, graphDetails, ...actualAmortizationData } = enrichedAmortizationMetaData;
+      console.log('save', actualAmortizationData);
+      await upsertAmortizationData(actualAmortizationData)
+    }
+  }
+
   const handleSignOut = () => {
     //  resetAmortization();
     navigate('/');
@@ -104,21 +155,21 @@ const Dashboard: React.FC = () => {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
-              {amortizationMetaData?.loanDetails && (<Grid item xs={9} md={9} lg={9}>
-                <FormInputs onSubmit={onSubmitCallBack} amortizationMetaData={amortizationMetaData} />
+              {enrichedAmortizationMetaData?.loanDetails && (<Grid item xs={9} md={9} lg={9}>
+                <FormInputs onSubmit={onSubmitCallBack} amortizationMetaData={enrichedAmortizationMetaData} />
               </Grid>)}
 
-              {amortizationMetaData?.graphDetails &&
+              {enrichedAmortizationMetaData?.graphDetails &&
                 <Grid item xs={3} md={3} lg={3}>
-                  <Summery  amortizationMetaData={amortizationMetaData} />
+                  <Summery amortizationMetaData={enrichedAmortizationMetaData} />
                 </Grid>
               }
               {
-                amortizationMetaData?.amortizationScheduleItemsByYear?.length &&
+                amortizationScheduleItemsByYear?.length &&
 
                 <Grid item xs={12}>
                   <NestedTable
-                    data={amortizationMetaData?.amortizationScheduleItemsByYear}
+                    data={amortizationScheduleItemsByYear}
                     updateAmortizationItem={onUpdateCallBack} />
                 </Grid>
               }

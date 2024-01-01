@@ -96,17 +96,17 @@ const Row: React.FC<RowProps> = ({ row, edit }) => {
 
 interface NestedTableProps {
   data: IAmortizationScheduleItemByYear[];
-  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem) => void;
+  updateAmortizationItem: (updatedItem: IAmortizationScheduleItem, changeParameter: string) => void;
 }
 
 const NestedTable: React.FC<NestedTableProps> = ({ data, updateAmortizationItem }) => {
   const [openModal, setOpenModal] = useState(false);
   const [amortizationScheduleItem, setAmortizationScheduleItem] = useState({} as IAmortizationScheduleItem);
 
-  const oncloseModal = (item: IAmortizationScheduleItem) => {
+  const oncloseModal = (item: IAmortizationScheduleItem, changeParameter: string) => {
     setOpenModal(false);
     // update 
-    updateAmortizationItem(item);
+    updateAmortizationItem(item, changeParameter);
     // fetch new values
 
   }

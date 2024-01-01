@@ -24,7 +24,7 @@ const modalContentStyles: React.CSSProperties = {
 
 interface FormDataModalProps {
     open: boolean;
-    onClose: (item: IAmortizationScheduleItem) => void;
+    onClose: (item: IAmortizationScheduleItem, changeParameter: string) => void;
     item: IAmortizationScheduleItem;
 }
 
@@ -37,9 +37,10 @@ const FormDataModal: React.FC<FormDataModalProps> = ({ open, onClose, item }) =>
         interestPaid = 0,
     } = item;
 
-    const [emi, setEmi] = useState<number>(0);
-    const [partPayment, setPartPayment] = useState<number>(0);
-    const [interestRate, setInterestRate] = useState<number>(0.0);
+    const [emi, setEmi] = useState<number>(item.payment ?? 0);
+    const [partPayment, setPartPayment] = useState<number>(item.extraPayment ?? 0);
+    const [interestRate, setInterestRate] = useState<number>(item.interestRateMnth ?? 0.0);
+    const [changeParameter, setChangeParameter] = useState<string>('');
     // Use useEffect to update the state when item.payment becomes available
     useEffect(() => {
         if (item.payment !== undefined) {
@@ -59,7 +60,7 @@ const FormDataModal: React.FC<FormDataModalProps> = ({ open, onClose, item }) =>
                 extraPayment: partPayment,
                 interestRateMnth: interestRate
                };
-        onClose(item);
+        onClose(item,changeParameter);
     };
 
     return (
@@ -151,6 +152,7 @@ const FormDataModal: React.FC<FormDataModalProps> = ({ open, onClose, item }) =>
                             value={interestRate}
                             onChange={(e) => {
                                 setInterestRate(parseFloat(e.target.value));
+                                setChangeParameter('interestRate');
                             }}
                         />
                     </Grid>
@@ -162,6 +164,7 @@ const FormDataModal: React.FC<FormDataModalProps> = ({ open, onClose, item }) =>
                             value={emi}
                             onChange={(e) => {
                                 setEmi(parseFloat(e.target.value));
+                                setChangeParameter('emiPayment');
                             }}
                         />
                     </Grid>
@@ -173,6 +176,7 @@ const FormDataModal: React.FC<FormDataModalProps> = ({ open, onClose, item }) =>
                             value={partPayment}
                             onChange={(e) => {
                                 setPartPayment(parseFloat(e.target.value));
+                                setChangeParameter('extraPayment');
                             }}
                         />
                     </Grid>
